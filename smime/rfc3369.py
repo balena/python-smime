@@ -5,11 +5,12 @@
 # http://tools.ietf.org/html/rfc3369
 #
 from pyasn1.type import tag, namedtype, namedval, univ, useful
-from pyasn1_modules import rfc2315
+
+from pyasn1_modules import rfc2315, rfc2459
 from pyasn1_modules.rfc2315 import GeneralNames, CertificateSerialNumber, UniqueIdentifier, AlgorithmIdentifier,\
     Attribute, Attributes, Extensions, Certificate, ExtendedCertificate, DigestAlgorithmIdentifiers,\
     CertificateRevocationLists, SignerInfos, IssuerAndSerialNumber, SubjectKeyIdentifier, Digest,\
-    DigestEncryptionAlgorithmIdentifier, EncryptedDigest, RecipientInfos, EncryptedContentInfo, EncryptedKey
+    DigestEncryptionAlgorithmIdentifier, EncryptedDigest, EncryptedContentInfo, EncryptedKey
 
 id_ct_contentInfo = univ.ObjectIdentifier('1.2.840.113549.1.9.16.1.6')
 id_data = rfc2315.data
@@ -19,9 +20,16 @@ id_digestedData = rfc2315.digestedData
 id_encryptedData = rfc2315.encryptedData
 id_authenticatedData = univ.ObjectIdentifier('1.2.840.113549.1.9.16.1.2')
 
+id_at_countryName = rfc2459.id_at_countryName
+
 ContentType = rfc2315.ContentType
 ContentInfo = rfc2315.ContentInfo
 Data = rfc2315.Data
+Name = rfc2315.Name
+RDNSequence = rfc2315.RDNSequence
+SignedAndEnvelopedData = rfc2315.SignedAndEnvelopedData
+RelativeDistinguishedName = rfc2315.RelativeDistinguishedName
+AttributeTypeAndValue = rfc2315.AttributeTypeAndValue
 
 class CMSVersion(univ.Integer):
     """
@@ -439,26 +447,6 @@ class UnprotectedAttributes(univ.SetOf):
     componentType = Attribute()
 
 
-class EnvelopedData(univ.Sequence):
-    """
-    EnvelopedData ::= SEQUENCE {
-      version CMSVersion,
-      originatorInfo [0] IMPLICIT OriginatorInfo OPTIONAL,
-      recipientInfos RecipientInfos,
-      encryptedContentInfo EncryptedContentInfo,
-      unprotectedAttrs [1] IMPLICIT UnprotectedAttributes OPTIONAL }
-    """
-    componentType = namedtype.NamedTypes(
-        namedtype.NamedType('version', CMSVersion()),
-        namedtype.OptionalNamedType('originatorInfo', OriginatorInfo().subtype(
-            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0))),
-        namedtype.NamedType('recipientInfos', RecipientInfos()),
-        namedtype.NamedType('encryptedContentInfo', EncryptedContentInfo()),
-        namedtype.NamedType('unprotectedAttrs', UnprotectedAttributes().subtype(
-            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 1)))
-    )
-
-
 class RecipientIdentifier(univ.Choice):
     """
     RecipientIdentifier ::= CHOICE {
@@ -514,6 +502,13 @@ class OriginatorIdentifierOrKey(univ.Choice):
         namedtype.NamedType('originatorKey', OriginatorPublicKey().subtype(
             implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 1)))
     )
+
+
+class UserKeyingMaterial(univ.OctetString):
+    """
+    UserKeyingMaterial ::= OCTET STRING
+    """
+    pass
 
 
 class OtherKeyAttribute(univ.Sequence):
@@ -572,13 +567,6 @@ class RecipientEncryptedKeys(univ.SequenceOf):
     RecipientEncryptedKeys ::= SEQUENCE OF RecipientEncryptedKey
     """
     componentType = RecipientEncryptedKey()
-
-
-class UserKeyingMaterial(univ.OctetString):
-    """
-    UserKeyingMaterial ::= OCTET STRING
-    """
-    pass
 
 
 class KeyAgreeRecipientInfo(univ.Sequence):
@@ -646,6 +634,67 @@ class PasswordRecipientInfo(univ.Sequence):
             implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0))),
         namedtype.NamedType('keyEncryptionAlgorithm', KeyEncryptionAlgorithmIdentifier()),
         namedtype.NamedType('encryptedKey', EncryptedKey())
+    )
+
+
+class OtherRecipientInfo(univ.Sequence):
+    """
+    OtherRecipientInfo ::= SEQUENCE {
+         oriType OBJECT IDENTIFIER,
+         oriValue ANY DEFINED BY oriType }
+    """
+    componentType = namedtype.NamedTypes(
+        namedtype.NamedType('oriType', univ.ObjectIdentifier()),
+        namedtype.NamedType('oriValue', univ.Any())
+    )
+
+
+class RecipientInfo(univ.Choice):
+    """
+    RecipientInfo ::= CHOICE {
+         ktri KeyTransRecipientInfo,
+         kari [1] KeyAgreeRecipientInfo,
+         kekri [2] KEKRecipientInfo,
+         pwri [3] PasswordRecipientInfo,
+         ori [4] OtherRecipientInfo }
+    """
+    componentType = namedtype.NamedTypes(
+        namedtype.NamedType('ktri', KeyTransRecipientInfo()),
+        namedtype.NamedType('kari', KeyAgreeRecipientInfo().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 1))),
+        namedtype.NamedType('kekri', KEKRecipientInfo().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 2))),
+        namedtype.NamedType('pwri', PasswordRecipientInfo().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 3))),
+        namedtype.NamedType('ori', OtherRecipientInfo().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 4)))
+    )
+
+
+class RecipientInfos(univ.SetOf):
+    """
+    RecipientInfos ::= SET SIZE (1..MAX) OF RecipientInfo
+    """
+    componentType = RecipientInfo()
+
+
+class EnvelopedData(univ.Sequence):
+    """
+    EnvelopedData ::= SEQUENCE {
+      version CMSVersion,
+      originatorInfo [0] IMPLICIT OriginatorInfo OPTIONAL,
+      recipientInfos RecipientInfos,
+      encryptedContentInfo EncryptedContentInfo,
+      unprotectedAttrs [1] IMPLICIT UnprotectedAttributes OPTIONAL }
+    """
+    componentType = namedtype.NamedTypes(
+        namedtype.NamedType('version', CMSVersion()),
+        namedtype.OptionalNamedType('originatorInfo', OriginatorInfo().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0))),
+        namedtype.NamedType('recipientInfos', RecipientInfos()),
+        namedtype.NamedType('encryptedContentInfo', EncryptedContentInfo()),
+        namedtype.OptionalNamedType('unprotectedAttrs', UnprotectedAttributes().subtype(
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 1)))
     )
 
 
@@ -741,6 +790,13 @@ class SigningTime(Time):
 class Countersignature(SignerInfo):
     """
     Countersignature ::= SignerInfo
+    """
+    pass
+
+
+class EncryptedContent(univ.OctetString):
+    """
+    EncryptedContent ::= OCTET STRING
     """
     pass
 
