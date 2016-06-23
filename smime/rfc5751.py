@@ -22,10 +22,6 @@ md2WithRSAEncryption = rfc2437.md2WithRSAEncryption
 md4WithRSAEncryption = rfc2437.md4WithRSAEncryption
 md5WithRSAEncryption = rfc2437.md5WithRSAEncryption
 sha1WithRSAEncryption = rfc2437.sha1WithRSAEncryption
-sha224WithRSAEncryption = univ.ObjectIdentifier('1.2.840.113549.1.1.14')
-sha256WithRSAEncryption = univ.ObjectIdentifier('1.2.840.113549.1.1.11')
-sha384WithRSAEncryption = univ.ObjectIdentifier('1.2.840.113549.1.1.12')
-sha512WithRSAEncryption = univ.ObjectIdentifier('1.2.840.113549.1.1.13')
 
 signingTime = rfc5652.id_signingTime
 
