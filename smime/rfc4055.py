@@ -82,16 +82,16 @@ class RSASSA_PSS_params(univ.Sequence):
     """
     componentType = namedtype.NamedTypes(
         namedtype.DefaultedNamedType('hashAlgorithm', HashAlgorithm(sha1Identifier).subtype(
-            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0))),
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0))),
         namedtype.DefaultedNamedType('maskGenAlgorithm', MaskGenAlgorithm(mgf1SHA1Identifier).subtype(
-            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 1))),
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 1))),
         namedtype.DefaultedNamedType('saltLength', univ.Integer(20).subtype(
-            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 2))),
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 2))),
         namedtype.DefaultedNamedType('trailerField', univ.Integer(1).subtype(
-            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 3))),
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 3)))
     )
 
-
+'''
 rSASSA_PSS_Default_Params = __instance(RSASSA_PSS_params,
                                        hashAlgorithm=sha1Identifier,
                                        maskGenAlgorithm=mgf1SHA1Identifier,
@@ -157,9 +157,9 @@ class RSAES_OAEP_params(univ.Sequence):
         namedtype.DefaultedNamedType('hashFunc', AlgorithmIdentifier(sha1Identifier).subtype(
             implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0))),
         namedtype.DefaultedNamedType('maskGenFunc', AlgorithmIdentifier(mgf1SHA1Identifier).subtype(
-            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0))),
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 1))),
         namedtype.DefaultedNamedType('pSourceFunc', AlgorithmIdentifier(pSpecifiedEmptyIdentifier).subtype(
-            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0))),
+            implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 2))),
     )
 
 
@@ -206,5 +206,7 @@ rSAES_OAEP_SHA512_Params = __instance(RSAES_OAEP_params,
 rSAES_OAEP_SHA512_Identifier = __instance(AlgorithmIdentifier,
                                           algorithm=id_RSAES_OAEP,
                                           parameters=rSAES_OAEP_SHA512_Params)
+'''
 
 RSAPublicKey = rfc2437.RSAPublicKey
+

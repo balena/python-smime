@@ -22,10 +22,6 @@ def parse(pem_cert):
     return decoder.decode(substrate, asn1Spec=rfc2459.Certificate())
 
 
-def getkey(cert):
-    pass # TODO
-
-
 if __name__ == "__main__":
     import sys
 
