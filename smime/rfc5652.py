@@ -6,7 +6,7 @@
 #
 from pyasn1.type import tag, namedtype, namedval, univ, useful
 
-from pyasn1_modules import rfc2315
+from pyasn1_modules import rfc2315, rfc2459
 from pyasn1_modules.rfc2315 import ContentType, GeneralNames, CertificateSerialNumber, UniqueIdentifier, \
     AlgorithmIdentifier, Extensions, Certificate, DigestAlgorithmIdentifiers, CertificateRevocationLists, \
     Attributes, Signature, AttributeValue, EncryptedContentInfo, IssuerAndSerialNumber, EncryptedKey, Digest
@@ -359,7 +359,7 @@ class CertificateSet(univ.SetOf):
 
 # -- 3. General Syntax
 
-id_ct_contentInfo = univ.ObjectIdentifier('1.2.840.113549.1.9.16.1.6')
+id_ct_contentInfo = rfc2315.pkcs_9 + (16, 1, 6)
 
 ContentInfo = rfc2315.ContentInfo
 
@@ -799,7 +799,7 @@ class EncryptedData(univ.Sequence):
 
 # -- 9. Authenticated-data Content Type
 
-id_authenticatedData = univ.ObjectIdentifier('1.2.840.113549.1.9.16.1.2')
+id_authenticatedData = rfc2315.pkcs_9 + (16, 1, 2)
 
 
 class AuthAttributes(univ.SetOf):
@@ -857,11 +857,11 @@ class AuthenticatedData(univ.Sequence):
 
 # -- 11.1. Content Type
 
-id_contentType = univ.ObjectIdentifier('1.2.840.113549.1.9.3')
+id_contentType = rfc2315.pkcs_9 + (3,)
 
 # -- 11.2. Message Digest
 
-id_messageDigest = univ.ObjectIdentifier('1.2.840.113549.1.9.4')
+id_messageDigest = rfc2315.pkcs_9 + (4,)
 
 
 class MessageDigest(univ.OctetString):
@@ -873,7 +873,7 @@ class MessageDigest(univ.OctetString):
 
 # -- 11.3. Signing Time
 
-id_signingTime = univ.ObjectIdentifier('1.2.840.113549.1.9.5')
+id_signingTime = rfc2315.pkcs_9 + (5,)
 
 
 class Time(univ.Choice):
@@ -897,7 +897,7 @@ class SigningTime(Time):
 
 # -- 11.4. Countersignature
 
-id_countersignature = univ.ObjectIdentifier('1.2.840.113549.1.9.6')
+id_countersignature = rfc2315.pkcs_9 + (6,)
 
 
 class Countersignature(SignerInfo):

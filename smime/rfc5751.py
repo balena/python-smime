@@ -6,17 +6,20 @@
 #
 from pyasn1.type import tag, namedtype, univ
 
-from pyasn1_modules import rfc2437
+from pyasn1_modules import rfc2315, rfc2437
 
 import rfc5652
 from rfc5652 import IssuerAndSerialNumber, SubjectKeyIdentifier, RecipientKeyIdentifier
 
-id_smime = univ.ObjectIdentifier('1.2.840.113549.1.9.16')
-id_cap = univ.ObjectIdentifier('1.2.840.113549.1.9.16.11')
-id_cap_preferBinaryInside = univ.ObjectIdentifier('1.2.840.113549.1.9.16.11.1')
-id_aa = univ.ObjectIdentifier('1.2.840.113549.1.9.16.2')
-id_aa_encrypKeyPref = univ.ObjectIdentifier('1.2.840.113549.1.9.16.2.11')
-smimeCapabilities = univ.ObjectIdentifier('1.2.840.113549.1.9.15')
+id_smime = rfc2315.pkcs_9 + (16,)
+
+id_cap = id_smime + (11,)
+id_cap_preferBinaryInside = id_cap + (1,)
+
+id_aa = id_smime + (2,)
+id_aa_encrypKeyPref = id_aa + (11,)
+
+smimeCapabilities = id_smime + (15,)
 
 md2WithRSAEncryption = rfc2437.md2WithRSAEncryption
 md4WithRSAEncryption = rfc2437.md4WithRSAEncryption
