@@ -2,14 +2,14 @@
 # S/MIME syntax
 #
 # ASN.1 source from:
-# http://tools.ietf.org/html/rfc3851
+# http://tools.ietf.org/html/rfc5751
 #
 from pyasn1.type import tag, namedtype, univ
 
 from pyasn1_modules import rfc2437
 
-import rfc3369
-from rfc3369 import IssuerAndSerialNumber, SubjectKeyIdentifier, RecipientKeyIdentifier
+import rfc5652
+from rfc5652 import IssuerAndSerialNumber, SubjectKeyIdentifier, RecipientKeyIdentifier
 
 id_smime = univ.ObjectIdentifier('1.2.840.113549.1.9.16')
 id_cap = univ.ObjectIdentifier('1.2.840.113549.1.9.16.11')
@@ -27,7 +27,7 @@ sha256WithRSAEncryption = univ.ObjectIdentifier('1.2.840.113549.1.1.11')
 sha384WithRSAEncryption = univ.ObjectIdentifier('1.2.840.113549.1.1.12')
 sha512WithRSAEncryption = univ.ObjectIdentifier('1.2.840.113549.1.1.13')
 
-signingTime = rfc3369.id_signingTime
+signingTime = rfc5652.id_signingTime
 
 
 class SMIMECapability(univ.Sequence):
