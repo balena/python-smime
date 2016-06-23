@@ -1,8 +1,11 @@
-from cStringIO import StringIO
-import rfc3369
-from pyasn1_modules import pem
-from pyasn1.codec.der import encoder, decoder
 import sys
+from cStringIO import StringIO
+from pyasn1.codec.der import encoder, decoder
+
+from pyasn1_modules import pem
+
+from rfc5652 import id_envelopedData, SignedData, id_digestedData, id_encryptedData, id_authenticatedData, Data, \
+    id_data, DigestedData, ContentInfo, AuthenticatedData, id_signedData, EncryptedData, EnvelopedData
 
 #from pyasn1 import debug
 #debug.setLogger(debug.Debug('all'))
@@ -26,7 +29,7 @@ else:
 
 assert substrate, 'bad S/MIME data on input'
 
-contentInfo, rest = decoder.decode(substrate, asn1Spec=rfc3369.ContentInfo())
+contentInfo, rest = decoder.decode(substrate, asn1Spec=ContentInfo())
 
 if rest: substrate = substrate[:-len(rest)]
 
@@ -39,12 +42,12 @@ assert encoder.encode(contentInfo, defMode=False) == substrate or \
 contentType = contentInfo.getComponentByName('contentType')
 
 contentInfoMap = {
-    rfc3369.id_data.asTuple(): rfc3369.Data(),
-    rfc3369.id_signedData.asTuple(): rfc3369.SignedData(),
-    rfc3369.id_envelopedData.asTuple(): rfc3369.EnvelopedData(),
-    rfc3369.id_digestedData.asTuple(): rfc3369.DigestedData(),
-    rfc3369.id_encryptedData.asTuple(): rfc3369.EncryptedData(),
-    rfc3369.id_authenticatedData.asTuple(): rfc3369.AuthenticatedData(),
+    id_data.asTuple(): Data(),
+    id_signedData.asTuple(): SignedData(),
+    id_envelopedData.asTuple(): EnvelopedData(),
+    id_digestedData.asTuple(): DigestedData(),
+    id_encryptedData.asTuple(): EncryptedData(),
+    id_authenticatedData.asTuple(): AuthenticatedData(),
 }
 
 content, _ = decoder.decode(

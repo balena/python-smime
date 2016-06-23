@@ -7,8 +7,8 @@
 from pyasn1.type import tag, namedtype, namedval, univ, useful
 
 from pyasn1_modules import rfc2315
-from pyasn1_modules.rfc2315 import ContentType, GeneralNames, CertificateSerialNumber, UniqueIdentifier,\
-    AlgorithmIdentifier, Extensions, Certificate, DigestAlgorithmIdentifiers, CertificateRevocationLists,\
+from pyasn1_modules.rfc2315 import ContentType, GeneralNames, CertificateSerialNumber, UniqueIdentifier, \
+    AlgorithmIdentifier, Extensions, Certificate, DigestAlgorithmIdentifiers, CertificateRevocationLists, \
     Attributes, Signature, AttributeValue, EncryptedContentInfo, IssuerAndSerialNumber, EncryptedKey, Digest
 
 

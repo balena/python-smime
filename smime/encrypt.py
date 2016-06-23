@@ -1,22 +1,24 @@
 # Refer to RFC3565
 
-import base64
+import Crypto.Random.OSRNG as RNG
+from Crypto.Cipher import AES
+from Crypto.PublicKey import RSA
 from email import message_from_string
 from email.mime.text import MIMEText
-from x509 import parse, getkey
-from Crypto.PublicKey import RSA
-from Crypto.Cipher import AES
-import Crypto.Random.OSRNG.posix as RNG
-from pyasn1.type import univ
 from pyasn1.codec.der import encoder
-from pyasn1_modules import rfc2459, rfc2437
-from rfc3369 import EnvelopedData, RecipientInfos, RecipientInfo, IssuerAndSerialNumber, Name, RDNSequence,\
-    RelativeDistinguishedName, AttributeTypeAndValue, CMSVersion, KeyTransRecipientInfo, RecipientIdentifier,\
-    KeyEncryptionAlgorithmIdentifier, EncryptedKey, EncryptedContentInfo, ContentEncryptionAlgorithmIdentifier, \
-    EncryptedContent, id_data
+from pyasn1.type import univ
 
+from pyasn1_modules import rfc2459, rfc2437
+from pyasn1_modules.rfc2315 import Name, RDNSequence, RelativeDistinguishedName, AttributeTypeAndValue, \
+    EncryptedContent
+
+from rfc5652 import EnvelopedData, RecipientInfos, RecipientInfo, IssuerAndSerialNumber, CMSVersion, \
+    KeyTransRecipientInfo, RecipientIdentifier, KeyEncryptionAlgorithmIdentifier, EncryptedKey, EncryptedContentInfo,\
+    ContentEncryptionAlgorithmIdentifier, id_data
+from x509 import parse, getkey
 
 id_aes256_CBC = univ.ObjectIdentifier('2.16.840.1.101.3.4.1.42')
+
 
 def __get_issuer_and_serial_number(cert):
     # TODO
@@ -28,6 +30,7 @@ def __get_issuer_and_serial_number(cert):
     issuerAndSerialNumber['issuer'][''][0][0]['type'] = rfc2459.id_at_countryName
     issuerAndSerialNumber['issuer'][''][0][0]['value'] = rfc2459.X520countryName('GB')
     return issuerAndSerialNumber
+
 
 def __get_enveloped_data(cert, encrypted_key, iv, encrypted_content):
     envelopedData = EnvelopedData()
@@ -86,7 +89,7 @@ def encrypt(message, pubkey):
     so that they can only be read by the intended recipient specified by pubkey.
     :return: string containing the new encrypted message.
     """
-    algorithm = AES      # we support only AES-256-CBC by now
+    algorithm = AES  # we support only AES-256-CBC by now
     key_size = 32
     mode = AES.MODE_CBC
 
