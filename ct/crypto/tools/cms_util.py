@@ -39,6 +39,7 @@ def try_open(args, file):
     # to DER. The advantage is that usage is more convenient; the disadvantage
     # is that error messages are less helpful because we don't know the expected
     # file format.
+    strict_der = not args.lazy
     printed = False
     if not args.filetype or args.filetype == "base64":
         if not args.filetype:
@@ -46,7 +47,7 @@ def try_open(args, file):
 
         try:
             der = b64decode(open(file, 'rb').read())
-            print_cms(args, cms.ContentInfo.decode(der, strict=True))
+            print_cms(args, cms.from_string(der, strict_der=strict_der))
         except TypeError as e:
             if not printed:
                 # Immediate error
@@ -60,8 +61,7 @@ def try_open(args, file):
         if not args.filetype:
             print("Attempting to read raw DER")
         try:
-            der = open(file, 'rb').read()
-            print_cms(args, cms.ContentInfo.decode(der, strict=True))
+            print_cms(args, cms.from_file(file, strict_der=strict_der))
         except error.ASN1Error as e:
             exit_with_message("Failed to parse DER from %s\n%s" % (file, e))
 
@@ -77,6 +77,8 @@ def main():
         description='Print information about the CMS content.')
     parser.add_argument('--debug', action='store_true',
                         help='prints full ASN.1 debug information')
+    parser.add_argument('--lazy', action='store_true',
+                        help='tolerate non-fatal DER errors')
     parser.add_argument('--filetype', default='', choices=['base64', 'der'],
                         help='specify an input file format (base64 or der). '
                              'If no format is specified, the parser attempts '
