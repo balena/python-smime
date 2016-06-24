@@ -89,7 +89,7 @@ def print_certs(args, cert_file):
 
 def exit_with_message(error_message):
     print error_message
-    print "Use --helpshort or --help to get help."
+    print "Use --help to get help."
     sys.exit(1)
 
 
@@ -113,10 +113,8 @@ def main():
     parser.add_argument('cert_files', nargs='+', metavar='cert_file',
                         help='PEM or DER encoded certificate file')
     args = parser.parse_args()
-    print args
 
     for filename in args.cert_files:
-        print filename
         print_certs(args, filename)
     sys.exit(0)
 
