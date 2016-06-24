@@ -248,6 +248,19 @@ CT_EMBEDDED_SCT_LIST = ObjectIdentifier(value="1.3.6.1.4.1.11129.2.4.2")
 CT_POISON = ObjectIdentifier(value="1.3.6.1.4.1.11129.2.4.3")
 CT_PRECERTIFICATE_SIGNING = ObjectIdentifier(value="1.3.6.1.4.1.11129.2.4.4")
 
+# CMS Specific
+ID_CT_CONTENT_INFO = ObjectIdentifier(value='1.2.840.113549.1.9.16.1.6')
+ID_DATA = ObjectIdentifier(value='1.2.840.113549.1.7.1')
+ID_SIGNED_DATA = ObjectIdentifier(value='1.2.840.113549.1.7.2')
+ID_ENVELOPED_DATA = ObjectIdentifier(value='1.2.840.113549.1.7.3')
+ID_DIGESTED_DATA = ObjectIdentifier(value='1.2.840.113549.1.7.5')
+ID_ENCRYPTED_DATA = ObjectIdentifier(value='1.2.840.113549.1.7.6')
+ID_AUTHENTICATED_DATA = ObjectIdentifier(value='1.2.840.113549.1.9.16.1.2')
+ID_CONTENT_TYPE = ObjectIdentifier(value='1.2.840.113549.1.9.3')
+ID_MESSAGE_DIGEST = ObjectIdentifier(value='1.2.840.113549.1.9.4')
+ID_SIGNING_TIME = ObjectIdentifier(value='1.2.840.113549.1.9.5')
+ID_COUNTERSIGNATURE = ObjectIdentifier(value='1.2.840.113549.1.9.6')
+
 _OID_NAME_DICT = {
     # Object identifier long names taken verbatim from the RFCs.
     # Short names are colloquial.
@@ -336,7 +349,19 @@ _OID_NAME_DICT = {
 
     CT_EMBEDDED_SCT_LIST: ("ctEmbeddedSCT", "ctEmbeddedSCT"),
     CT_POISON: ("ctPoison", "ctPoison"),
-    CT_PRECERTIFICATE_SIGNING: ("ctPrecertificateSigningCert", "ctPrecertificateSigningCert")
+    CT_PRECERTIFICATE_SIGNING: ("ctPrecertificateSigningCert", "ctPrecertificateSigningCert"),
+
+    ID_CT_CONTENT_INFO: ('id-ct-contentInfo', 'contentInfo'),
+    ID_DATA: ('id-data', 'data'),
+    ID_SIGNED_DATA: ('id-signedData', 'signedData'),
+    ID_ENVELOPED_DATA: ('id-envelopedData', 'envelopedData'),
+    ID_DIGESTED_DATA: ('id-digestedData', 'digestedData'),
+    ID_ENCRYPTED_DATA: ('id-encryptedData', 'encryptedData'),
+    ID_AUTHENTICATED_DATA: ('id-authenticatedData', 'authenticatedData'),
+    ID_CONTENT_TYPE: ('id-contentType', 'contentType'),
+    ID_MESSAGE_DIGEST: ('id-messageDigest', 'messageDigest'),
+    ID_SIGNING_TIME: ('id-signingTime', 'signingTime'),
+    ID_COUNTERSIGNATURE: ('id-countersignature', 'countersignature')
     }
 
 _OID_DECODING_DICT = {}
