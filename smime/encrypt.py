@@ -1,87 +1,70 @@
 # Refer to RFC3565
 
+import sys
 import base64
 import Crypto.Random.OSRNG as RNG
 from Crypto.Cipher import AES
 from Crypto.PublicKey import RSA
 from email import message_from_string
 from email.mime.text import MIMEText
-from pyasn1.codec.der import encoder, decoder
-from pyasn1.type import tag, univ
 
-from pyasn1_modules import rfc2437
-from pyasn1_modules.rfc2315 import Name, EncryptedContent
+from ct.crypto import cert
+from ct.crypto.asn1 import oid, types
+from ct.crypto.asn1 import cms
+from ct.crypto.asn1 import cms_common
 
-import rfc4055
-from rfc5652 import EnvelopedData, RecipientInfos, RecipientInfo, IssuerAndSerialNumber, CMSVersion, \
-    KeyTransRecipientInfo, RecipientIdentifier, KeyEncryptionAlgorithmIdentifier, EncryptedKey, EncryptedContentInfo,\
-    ContentEncryptionAlgorithmIdentifier, id_data
-from x509 import parse
+if sys.version_info > (3,):
+    long = int
 
-
-id_aes256_CBC = univ.ObjectIdentifier('2.16.840.1.101.3.4.1.42')
+ID_AES256_CBC = oid.ObjectIdentifier('2.16.840.1.101.3.4.1.42')
 
 
-def __instance(klazz, *args, **kwargs):
-    object = klazz()
-    for k, v in enumerate(args):
-        object[k] = v
-    for k, v in kwargs.iteritems():
-        object[k] = v
-    return object
-
-
-def __get_issuer_and_serial_number(cert):
-    tbsCertificate = cert['tbsCertificate']
-    issuer = tbsCertificate['issuer']
-    rdnSequence = issuer['']
-
-    name = Name()
-    name[''] = rdnSequence
-    return __instance(
-        IssuerAndSerialNumber,
-        issuer=name,
-        serialNumber=tbsCertificate['serialNumber']
-    )
-
-
-def __get_enveloped_data(cert, encrypted_key, iv, encrypted_content):
-    content = EncryptedContent(encrypted_content)\
-        .subtype(implicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0))
-    return __instance(
-        EnvelopedData,
-        version=CMSVersion('v0'),
-        recipientInfos=__instance(
-            RecipientInfos,
-            __instance(
-                RecipientInfo,
-                ktri=__instance(
-                    KeyTransRecipientInfo,
-                    version='v0',
-                    rid=__instance(
-                        RecipientIdentifier,
-                        issuerAndSerialNumber=__get_issuer_and_serial_number(cert)
-                    ),
-                    keyEncryptionAlgorithm=__instance(
-                        KeyEncryptionAlgorithmIdentifier,
-                        algorithm=rfc2437.rsaEncryption,
-                        parameters=univ.Null()
-                    ),
-                    encryptedKey=EncryptedKey(encrypted_key)
-                )
-            )
-        ),
-        encryptedContentInfo=__instance(
-            EncryptedContentInfo,
-            contentType=id_data,
-            contentEncryptionAlgorithm=__instance(
-                ContentEncryptionAlgorithmIdentifier,
-                algorithm=id_aes256_CBC,
-                parameters=univ.OctetString(iv)
-            ),
-            encryptedContent=content
+class RSAPublicKey(types.Sequence):
+    components = (
+        (types.Component('modulus', types.Integer)),
+        (types.Component('publicExponent', types.Integer))
         )
-    )
+
+
+def __get_issuer_and_serial_number(x509_cert):
+    tbsCertificate = x509_cert['tbsCertificate']
+    return cms_common.IssuerAndSerialNumber({
+        'issuer': tbsCertificate['issuer'],
+        'serialNumber': tbsCertificate['serialNumber']
+    })
+
+
+def __get_enveloped_data(x509_cert, encrypted_key, iv, encrypted_content):
+    return cms.ContentInfo({
+        'contentType': oid.ID_ENVELOPED_DATA,
+        'content': cms.EnvelopedData({
+            'version': cms_common.CMSVersion('v0'),
+            'recipientInfos': cms_common.RecipientInfos([
+                cms_common.RecipientInfo({
+                    'ktri': cms_common.KeyTransRecipientInfo({
+                        'version': cms_common.CMSVersion('v0'),
+                        'rid': cms_common.RecipientIdentifier({
+                            'issuerAndSerialNumber': __get_issuer_and_serial_number(x509_cert)
+                        }),
+                        'keyEncryptionAlgorithm': cms_common.KeyEncryptionAlgorithmIdentifier({
+                            'algorithm': oid.RSA_ENCRYPTION,
+                            'parameters': types.Null(False)
+                        }),
+                        'encryptedKey':  cms_common.EncryptedKey(encrypted_key)
+                    })
+                })
+            ]),
+            'encryptedContentInfo': cms_common.EncryptedContentInfo({
+                'contentType': oid.ID_DATA,
+                'contentEncryptionAlgorithm': cms_common.ContentEncryptionAlgorithmIdentifier({
+                    'algorithm': ID_AES256_CBC,
+                    'parameters': types.OctetString(iv)
+                }),
+                'encryptedContent': cms_common.EncryptedContent(encrypted_content)
+            })
+        })
+    })
+
 
 def __encode_in_base64(stream):
     columns = 64
@@ -104,13 +87,13 @@ def __bin2bytearray(s):
     return ''.join(result)
 
 
-def __get_public_rsa_key(cert):
-    substrate = __bin2bytearray(tuple(cert['tbsCertificate']['subjectPublicKeyInfo']['subjectPublicKey']))
-    content, _ = decoder.decode(substrate, asn1Spec=rfc4055.RSAPublicKey())
-    return (long(content['modulus']), long(content['publicExponent']))
+def __get_public_rsa_key(x509_cert):
+    substrate = __bin2bytearray(tuple(x509_cert['tbsCertificate']['subjectPublicKeyInfo']['subjectPublicKey'].value))
+    content = RSAPublicKey.decode(substrate)
+    return long(content['modulus'].value), long(content['publicExponent'].value)
 
 
-def __pad(s, block_size):
+def __pad1(s, block_size):
     n = block_size - len(s) % block_size
     return s + n * chr(n)
 
@@ -130,20 +113,21 @@ def encrypt(message, pubkey):
     content = msg.get_payload()
 
     # Read the pubkey
-    cert, _ = parse(pubkey)
-    key = __get_public_rsa_key(cert)
+    x509_certs = cert.certs_from_pem(pubkey)
+    x509_cert = x509_certs.next()._asn1_cert
+    key = __get_public_rsa_key(x509_cert)
     block_size = algorithm.block_size
     rsa = RSA.construct(key)
 
     session_key = RNG.new().read(key_size)
     iv = RNG.new().read(block_size)
     aes = algorithm.new(session_key, mode, iv)
-    encrypted_content = aes.encrypt(__pad(content, block_size))
+    encrypted_content = aes.encrypt(__pad1(content, block_size))
     encrypted_key = rsa.encrypt(session_key, len(session_key))[0]
 
     # Encode the content
-    enveloped_data = __get_enveloped_data(cert, encrypted_key, iv, encrypted_content)
-    encoded_content = __encode_in_base64(encoder.encode(enveloped_data))
+    enveloped_data = __get_enveloped_data(x509_cert, encrypted_key, iv, encrypted_content)
+    encoded_content = __encode_in_base64(enveloped_data.encode())
 
     # Create the resulting message
     result_msg = MIMEText(encoded_content)
