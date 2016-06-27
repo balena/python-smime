@@ -1,31 +1,16 @@
 # Refer to RFC3565
 
-import sys
 import base64
 import Crypto.Random.OSRNG as RNG
-from Crypto.Cipher import AES, PKCS1_v1_5
-from Crypto.PublicKey import RSA
 from email import message_from_string
 from email.mime.text import MIMEText
 
-from ct.crypto import cert
+from rsa import RSAPublicKey
+from aes import AES128_CBC, AES192_CBC, AES256_CBC
+
 from ct.crypto.asn1 import oid, types
 from ct.crypto.asn1 import cms
 from ct.crypto.asn1 import cms_common
-
-from abc import ABCMeta, abstractproperty, abstractmethod
-
-if sys.version_info > (3,):
-    long = int
-
-ID_AES256_CBC = oid.ObjectIdentifier('2.16.840.1.101.3.4.1.42')
-
-
-class RSAPublicKey(types.Sequence):
-    components = (
-        (types.Component('modulus', types.Integer)),
-        (types.Component('publicExponent', types.Integer))
-        )
 
 
 def __get_issuer_and_serial_number(x509_cert):
@@ -36,7 +21,7 @@ def __get_issuer_and_serial_number(x509_cert):
     })
 
 
-def __get_enveloped_data(x509_cert, encrypted_key, iv, encrypted_content):
+def __get_enveloped_data(pubkey_cipher, sym_cipher, x509_cert, encrypted_key, iv, encrypted_content):
     return cms.ContentInfo({
         'contentType': oid.ID_ENVELOPED_DATA,
         'content': cms.EnvelopedData({
@@ -46,12 +31,14 @@ def __get_enveloped_data(x509_cert, encrypted_key, iv, encrypted_content):
                     'ktri': cms_common.KeyTransRecipientInfo({
                         'version': cms_common.CMSVersion('v0'),
                         'rid': cms_common.RecipientIdentifier({
-                            'issuerAndSerialNumber': __get_issuer_and_serial_number(x509_cert)
+                            'issuerAndSerialNumber':
+                                __get_issuer_and_serial_number(x509_cert)
                         }),
-                        'keyEncryptionAlgorithm': cms_common.KeyEncryptionAlgorithmIdentifier({
-                            'algorithm': oid.RSA_ENCRYPTION,
-                            'parameters': types.Null(False)
-                        }),
+                        'keyEncryptionAlgorithm':
+                            cms_common.KeyEncryptionAlgorithmIdentifier({
+                                'algorithm': pubkey_cipher.oid,
+                                'parameters': types.Null(False)
+                            }),
                         'encryptedKey':  cms_common.EncryptedKey(encrypted_key)
                     })
                 })
@@ -59,7 +46,7 @@ def __get_enveloped_data(x509_cert, encrypted_key, iv, encrypted_content):
             'encryptedContentInfo': cms_common.EncryptedContentInfo({
                 'contentType': oid.ID_DATA,
                 'contentEncryptionAlgorithm': cms_common.ContentEncryptionAlgorithmIdentifier({
-                    'algorithm': ID_AES256_CBC,
+                    'algorithm': sym_cipher.oid,
                     'parameters': types.OctetString(iv)
                 }),
                 'encryptedContent': cms_common.EncryptedContent(encrypted_content)
@@ -79,119 +66,48 @@ def __encode_in_base64(stream):
     return '\n'.join(result)
 
 
-def __bin2bytearray(s):
-    assert len(s) % 8 == 0
-    result = []
-    while s:
-        byte = int(''.join([str(x) for x in s[:8]]), 2)
-        result.append(chr(byte))
-        s = s[8:]
-    return ''.join(result)
-
-
-def __get_public_rsa_key(x509_cert):
-    return __bin2bytearray(tuple(x509_cert['tbsCertificate']['subjectPublicKeyInfo']['subjectPublicKey'].value))
-
-
-def __pad(s, block_size):
-    n = block_size - len(s) % block_size
-    return s + n * chr(n)
-
-
-def __load_pubkey(pubkey):
-    x509_certs = cert.certs_from_pem(pubkey)
-    x509_cert = x509_certs.next()._asn1_cert
-    der = __get_public_rsa_key(x509_cert)
-    key = RSA.importKey(der)
-    cipher = PKCS1_v1_5.new(key)
-    return x509_cert, cipher
-
-
-class Algorithm():
-    __metaclass__ = ABCMeta
-
-    block_size = None
-
-    @abstractproperty
-    def key_size(self):
-        return NotImplemented
-
-    @abstractmethod
-    def new(self, session_key, iv=None):
-        return NotImplemented
-
-
-class AES_CBC(Algorithm):
-    block_size = 16
-
-    @classmethod
-    def new(self, session_key, iv):
-        return AES.new(session_key, AES.MODE_CBC, iv)
-
-
-class AES_128_CBC(AES_CBC):
-    def __init__(self):
-        self._key_size = 16
-
-    @property
-    def key_size(self):
-        return self._key_size
-
-
-class AES_192_CBC(AES_CBC):
-    def __init__(self):
-        self._key_size = 24
-
-    @property
-    def key_size(self):
-        return self._key_size
-
-
-class AES_256_CBC(AES_CBC):
-    def __init__(self):
-        self._key_size = 32
-
-    @property
-    def key_size(self):
-        return self._key_size
-
-
-def __encrypt_internal(rsa, algo, content, session_key, iv):
+def __encrypt_internal(rsa, algo, content, session_key):
     """
     Takes the contents of the message parameter, formatted as in RFC 2822, and encrypts them,
     so that they can only be read by the intended recipient specified by pubkey.
     :return: string containing the new encrypted message.
     """
-    encrypted_key = rsa.encrypt(session_key)
-
-    enc = algo.new(session_key, iv)
-    encrypted_content = enc.encrypt(__pad(content, algo.block_size))
-
-    return encrypted_key, encrypted_content
+    return rsa.encrypt(session_key), algo.encrypt(content)
 
 
-def encrypt(message, pubkey):
+def encrypt(message, pubkey, algorithm='aes256'):
     """
     Takes the contents of the message parameter, formatted as in RFC 2822, and encrypts them,
     so that they can only be read by the intended recipient specified by pubkey.
     :return: string containing the new encrypted message.
     """
-    algo = AES_256_CBC()  # we support only AES-256-CBC by now
+
+    if algorithm == 'aes256':
+        Algo = AES256_CBC
+    elif algorithm == 'aes192':
+        Algo = AES192_CBC
+    elif algorithm == 'aes128':
+        Algo = AES128_CBC
+    else:
+        raise ValueError('Unknown algorithm')
 
     # Get the message content
     msg = message_from_string(message)
     to_encode = MIMEText(msg.get_payload())
     content = to_encode.as_string()
 
-    x509_cert, rsa = __load_pubkey(pubkey)
+    pubkey_cipher = RSAPublicKey(pubkey)
 
-    session_key = RNG.new().read(algo.key_size)
-    iv = RNG.new().read(algo.block_size)
+    session_key = RNG.new().read(Algo.key_size)
+    iv = RNG.new().read(Algo.block_size)
+    sym_cipher = Algo(session_key, iv)
 
-    encrypted_key, encrypted_content = __encrypt_internal(rsa, algo, content, session_key, iv)
+    encrypted_key = pubkey_cipher.encrypt(session_key)
+    encrypted_content = sym_cipher.encrypt(content)
 
     # Encode the content
-    enveloped_data = __get_enveloped_data(x509_cert, encrypted_key, iv, encrypted_content)
+    enveloped_data = __get_enveloped_data(pubkey_cipher, sym_cipher,
+            pubkey_cipher.get_cert(), encrypted_key, iv, encrypted_content)
     encoded_content = __encode_in_base64(enveloped_data.encode())
 
     # Create the resulting message
