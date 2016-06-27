@@ -47,3 +47,8 @@ Content-Disposition: attachment; filename=smime.p7m
 <base64-enveloped-data>
 ```
 
+The same can be decrypted using OpenSSL from the command line:
+
+```
+openssl smime -decrypt -in smime.p7m -inkey alice-private-key.pem
+```
