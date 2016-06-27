@@ -3,7 +3,7 @@
 import sys
 import base64
 import Crypto.Random.OSRNG as RNG
-from Crypto.Cipher import AES
+from Crypto.Cipher import AES, PKCS1_v1_5
 from Crypto.PublicKey import RSA
 from email import message_from_string
 from email.mime.text import MIMEText
@@ -12,6 +12,8 @@ from ct.crypto import cert
 from ct.crypto.asn1 import oid, types
 from ct.crypto.asn1 import cms
 from ct.crypto.asn1 import cms_common
+
+from abc import ABCMeta, abstractproperty, abstractmethod
 
 if sys.version_info > (3,):
     long = int
@@ -88,14 +90,84 @@ def __bin2bytearray(s):
 
 
 def __get_public_rsa_key(x509_cert):
-    substrate = __bin2bytearray(tuple(x509_cert['tbsCertificate']['subjectPublicKeyInfo']['subjectPublicKey'].value))
-    content = RSAPublicKey.decode(substrate)
-    return long(content['modulus'].value), long(content['publicExponent'].value)
+    return __bin2bytearray(tuple(x509_cert['tbsCertificate']['subjectPublicKeyInfo']['subjectPublicKey'].value))
 
 
-def __pad1(s, block_size):
+def __pad(s, block_size):
     n = block_size - len(s) % block_size
     return s + n * chr(n)
+
+
+def __load_pubkey(pubkey):
+    x509_certs = cert.certs_from_pem(pubkey)
+    x509_cert = x509_certs.next()._asn1_cert
+    der = __get_public_rsa_key(x509_cert)
+    key = RSA.importKey(der)
+    cipher = PKCS1_v1_5.new(key)
+    return x509_cert, cipher
+
+
+class Algorithm():
+    __metaclass__ = ABCMeta
+
+    block_size = None
+
+    @abstractproperty
+    def key_size(self):
+        return NotImplemented
+
+    @abstractmethod
+    def new(self, session_key, iv=None):
+        return NotImplemented
+
+
+class AES_CBC(Algorithm):
+    block_size = 16
+
+    @classmethod
+    def new(self, session_key, iv):
+        return AES.new(session_key, AES.MODE_CBC, iv)
+
+
+class AES_128_CBC(AES_CBC):
+    def __init__(self):
+        self._key_size = 16
+
+    @property
+    def key_size(self):
+        return self._key_size
+
+
+class AES_192_CBC(AES_CBC):
+    def __init__(self):
+        self._key_size = 24
+
+    @property
+    def key_size(self):
+        return self._key_size
+
+
+class AES_256_CBC(AES_CBC):
+    def __init__(self):
+        self._key_size = 32
+
+    @property
+    def key_size(self):
+        return self._key_size
+
+
+def __encrypt_internal(rsa, algo, content, session_key, iv):
+    """
+    Takes the contents of the message parameter, formatted as in RFC 2822, and encrypts them,
+    so that they can only be read by the intended recipient specified by pubkey.
+    :return: string containing the new encrypted message.
+    """
+    encrypted_key = rsa.encrypt(session_key)
+
+    enc = algo.new(session_key, iv)
+    encrypted_content = enc.encrypt(__pad(content, algo.block_size))
+
+    return encrypted_key, encrypted_content
 
 
 def encrypt(message, pubkey):
@@ -104,26 +176,18 @@ def encrypt(message, pubkey):
     so that they can only be read by the intended recipient specified by pubkey.
     :return: string containing the new encrypted message.
     """
-    algorithm = AES  # we support only AES-256-CBC by now
-    key_size = 32
-    mode = AES.MODE_CBC
+    algo = AES_256_CBC()  # we support only AES-256-CBC by now
 
     # Get the message content
     msg = message_from_string(message)
     content = msg.get_payload()
 
-    # Read the pubkey
-    x509_certs = cert.certs_from_pem(pubkey)
-    x509_cert = x509_certs.next()._asn1_cert
-    key = __get_public_rsa_key(x509_cert)
-    block_size = algorithm.block_size
-    rsa = RSA.construct(key)
+    x509_cert, rsa = __load_pubkey(pubkey)
 
-    session_key = RNG.new().read(key_size)
-    iv = RNG.new().read(block_size)
-    aes = algorithm.new(session_key, mode, iv)
-    encrypted_content = aes.encrypt(__pad1(content, block_size))
-    encrypted_key = rsa.encrypt(session_key, len(session_key))[0]
+    session_key = RNG.new().read(algo.key_size)
+    iv = RNG.new().read(algo.block_size)
+
+    encrypted_key, encrypted_content = __encrypt_internal(rsa, algo, content, session_key, iv)
 
     # Encode the content
     enveloped_data = __get_enveloped_data(x509_cert, encrypted_key, iv, encrypted_content)
