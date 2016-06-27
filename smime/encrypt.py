@@ -180,7 +180,8 @@ def encrypt(message, pubkey):
 
     # Get the message content
     msg = message_from_string(message)
-    content = msg.get_payload()
+    to_encode = MIMEText(msg.get_payload())
+    content = to_encode.as_string()
 
     x509_cert, rsa = __load_pubkey(pubkey)
 
