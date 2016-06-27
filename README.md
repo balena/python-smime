@@ -38,7 +38,7 @@ Output:
 ```
 To: "Alice" <alice@foo.com>
 From: "Bob" <bob@bar.com>
-Subject: Received SMS from Twilio
+Subject: A message from python
 MIME-Version: 1.0
 Content-Type: application/pkcs7-mime; smime-type=enveloped-data; name=smime.p7m
 Content-Transfer-Encoding: base64
