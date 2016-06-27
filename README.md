@@ -33,3 +33,17 @@ with open('alice-public-key.pem', 'rb') in pem
     print(smime.encrypt('\n'.join(message), pem.read()))
 ```
 
+Output:
+
+```
+To: "Alice" <alice@foo.com>
+From: "Bob" <bob@bar.com>
+Subject: Received SMS from Twilio
+MIME-Version: 1.0
+Content-Type: application/pkcs7-mime; smime-type=enveloped-data; name=smime.p7m
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename=smime.p7m
+
+<base64-enveloped-data>
+```
+
