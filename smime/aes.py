@@ -4,10 +4,6 @@ from Crypto.Cipher import AES
 
 from abc import ABCMeta, abstractmethod
 
-ID_AES128_CBC = oid.ObjectIdentifier('2.16.840.1.101.3.4.1.2')
-ID_AES192_CBC = oid.ObjectIdentifier('2.16.840.1.101.3.4.1.22')
-ID_AES256_CBC = oid.ObjectIdentifier('2.16.840.1.101.3.4.1.42')
-
 
 class Algorithm():
     __metaclass__ = ABCMeta
@@ -45,15 +41,15 @@ class AES_CBC(Algorithm):
 
 
 class AES128_CBC(AES_CBC):
-    oid = ID_AES128_CBC
+    oid = oid.ID_AES128_CBC
     key_size = 16
 
 
 class AES192_CBC(AES_CBC):
-    oid = ID_AES192_CBC
+    oid = oid.ID_AES192_CBC
     key_size = 24
 
 
 class AES256_CBC(AES_CBC):
-    oid = ID_AES256_CBC
+    oid = oid.ID_AES256_CBC
     key_size = 32

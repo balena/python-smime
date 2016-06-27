@@ -9,41 +9,57 @@ from ct.crypto.asn1 import x509
 
 # -- 10.1. Algorithm Identifier Types
 
-class DigestAlgorithmIdentifier(x509_common.AlgorithmIdentifier):
+_ALGORITHM_IDENTIFIER_DICT = {
+    oid.RSA_ENCRYPTION: types.Null,
+    oid.ID_AES128_CBC: types.OctetString,
+    oid.ID_AES192_CBC: types.OctetString,
+    oid.ID_AES256_CBC: types.OctetString
+}
+
+class AlgorithmIdentifier(types.Sequence):
+    components = (
+        (types.Component("algorithm", oid.ObjectIdentifier)),
+        (types.Component("parameters", types.Any, optional=True,
+                         defined_by="algorithm", lookup=_ALGORITHM_IDENTIFIER_DICT))
+        )
+
+
+class DigestAlgorithmIdentifier(AlgorithmIdentifier):
     """
     DigestAlgorithmIdentifier ::= AlgorithmIdentifier
     """
     pass
 
 
-class SignatureAlgorithmIdentifier(x509_common.AlgorithmIdentifier):
+class SignatureAlgorithmIdentifier(AlgorithmIdentifier):
     """
     SignatureAlgorithmIdentifier ::= AlgorithmIdentifier
     """
     pass
 
 
-class KeyEncryptionAlgorithmIdentifier(x509_common.AlgorithmIdentifier):
+class KeyEncryptionAlgorithmIdentifier(AlgorithmIdentifier):
     """
     KeyEncryptionAlgorithmIdentifier ::= AlgorithmIdentifier
     """
+    pass
 
 
-class ContentEncryptionAlgorithmIdentifier(x509_common.AlgorithmIdentifier):
+class ContentEncryptionAlgorithmIdentifier(AlgorithmIdentifier):
     """
     ContentEncryptionAlgorithmIdentifier ::= AlgorithmIdentifier
     """
     pass
 
 
-class MessageAuthenticationCodeAlgorithm(x509_common.AlgorithmIdentifier):
+class MessageAuthenticationCodeAlgorithm(AlgorithmIdentifier):
     """
     MessageAuthenticationCodeAlgorithm ::= AlgorithmIdentifier
     """
     pass
 
 
-class KeyDerivationAlgorithmIdentifier(x509_common.AlgorithmIdentifier):
+class KeyDerivationAlgorithmIdentifier(AlgorithmIdentifier):
     """
     KeyDerivationAlgorithmIdentifier ::= AlgorithmIdentifier
     """

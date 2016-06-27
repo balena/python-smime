@@ -261,6 +261,12 @@ ID_MESSAGE_DIGEST = ObjectIdentifier(value='1.2.840.113549.1.9.4')
 ID_SIGNING_TIME = ObjectIdentifier(value='1.2.840.113549.1.9.5')
 ID_COUNTERSIGNATURE = ObjectIdentifier(value='1.2.840.113549.1.9.6')
 
+# AES Specific
+ID_AES128_CBC = ObjectIdentifier(value='2.16.840.1.101.3.4.1.2')
+ID_AES192_CBC = ObjectIdentifier(value='2.16.840.1.101.3.4.1.22')
+ID_AES256_CBC = ObjectIdentifier(value='2.16.840.1.101.3.4.1.42')
+
+
 _OID_NAME_DICT = {
     # Object identifier long names taken verbatim from the RFCs.
     # Short names are colloquial.
@@ -361,7 +367,11 @@ _OID_NAME_DICT = {
     ID_CONTENT_TYPE: ('id-contentType', 'contentType'),
     ID_MESSAGE_DIGEST: ('id-messageDigest', 'messageDigest'),
     ID_SIGNING_TIME: ('id-signingTime', 'signingTime'),
-    ID_COUNTERSIGNATURE: ('id-countersignature', 'countersignature')
+    ID_COUNTERSIGNATURE: ('id-countersignature', 'countersignature'),
+
+    ID_AES128_CBC: ('id-aes128-CBC', 'AES-128-CBC'),
+    ID_AES192_CBC: ('id-aes192-CBC', 'AES-192-CBC'),
+    ID_AES256_CBC: ('id-aes256-CBC', 'AES-256-CBC')
     }
 
 _OID_DECODING_DICT = {}
