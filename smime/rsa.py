@@ -1,8 +1,8 @@
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_v1_5
 
-from ct.crypto import cert
-from ct.crypto.asn1 import oid, types
+from smime.crypto import cert
+from smime.crypto.asn1 import oid, types
 
 
 class ASN1_RSAPublicKey(types.Sequence):

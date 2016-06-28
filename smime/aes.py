@@ -1,4 +1,4 @@
-from ct.crypto.asn1 import oid
+from smime.crypto.asn1 import oid
 
 from Crypto.Cipher import AES
 

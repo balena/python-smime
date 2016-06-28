@@ -8,9 +8,9 @@ from email.mime.text import MIMEText
 from rsa import RSAPublicKey
 from aes import AES128_CBC, AES192_CBC, AES256_CBC
 
-from ct.crypto.asn1 import oid, types
-from ct.crypto.asn1 import cms
-from ct.crypto.asn1 import cms_common
+from smime.crypto.asn1 import oid, types
+from smime.crypto.asn1 import cms
+from smime.crypto.asn1 import cms_common
 
 
 def __get_issuer_and_serial_number(x509_cert):
