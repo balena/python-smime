@@ -55,7 +55,8 @@ class EncryptTest(unittest.TestCase):
         ]
         cmd_output = self.get_cmd_output(cmd)
         private_message = message_from_string(cmd_output)
-        self.assertTrue(private_message.get_payload().endswith('\n\nNow you see me.'))
+        payload = private_message.get_payload().splitlines()
+        self.assertEquals('Now you see me.', payload[len(payload)-1])
 
     def test_message_to_carl_aes256(self):
         self.assertMessageToCarlWith('aes256')
