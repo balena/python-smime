@@ -2,3 +2,5 @@
 .*.swp
 *.pyc
 build/
+smime.egg-info/
+dist/

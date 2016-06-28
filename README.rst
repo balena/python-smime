@@ -38,7 +38,7 @@ the e-mail in S/MIME format::
         'Now you see me.'
     ]
 
-    with open('alice-public-key.pem', 'rb') in pem
+    with open('alice-public-key.pem', 'rb') as pem:
         print(smime.encrypt('\n'.join(message), pem.read()))
 
 Output::

@@ -16,7 +16,7 @@ setup(
     version=__import__('smime').__version__,
     description='Python S/MIME Toolkit',
     long_description=long_description,
-    url='github.com/balena/python-smime',
+    url='https://github.com/balena/python-smime',
     author='G. B. Versiani',
     author_email='guibv@yahoo.com',
     license='Apache License (2.0)',
@@ -28,7 +28,7 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Topic :: Software Development :: Libraries',
-        'Topic :: Communications :: Email'
+        'Topic :: Communications :: Email',
         'Topic :: Security :: Cryptography',
     ],
     keywords='smime cryptography email',
