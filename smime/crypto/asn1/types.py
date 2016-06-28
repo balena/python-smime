@@ -1304,7 +1304,7 @@ class Choice(Constructed, collections.MutableMapping):
         if len(value) != 1:
             raise ValueError("Choice must have at most one component set")
 
-        key, value = value.items().next()
+        key, value = value.items()[0]
         if value is None:
             return {}
 
