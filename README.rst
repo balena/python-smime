@@ -24,7 +24,6 @@ Requirements
 Example
 -------
 
-.. code:: python
     import sys
     import smime
 
@@ -38,7 +37,6 @@ Example
 
     with open('alice-public-key.pem', 'rb') in pem
         print(smime.encrypt('\n'.join(message), pem.read()))
-
 
 Output:
 
@@ -54,7 +52,7 @@ Output:
 
 The same can be decrypted using OpenSSL from the command line:
 
-    openssl smime -decrypt -in smime.p7m -inkey alice-private-key.pem
+    $ openssl smime -decrypt -in smime.p7m -inkey alice-private-key.pem
 
 
 License
