@@ -112,22 +112,21 @@ def encrypt(message, pubkey, algorithm='aes256'):
 
     # Create the resulting message
     result_msg = MIMEText(encoded_content)
-    overrides = {
-        'MIME-Version': '1.0',
-        'Content-Type': 'application/pkcs7-mime; smime-type=enveloped-data; name=smime.p7m',
-        'Content-Transfer-Encoding': 'base64',
-        'Content-Disposition': 'attachment; filename=smime.p7m'
-    }
+    overrides = (
+        ('MIME-Version', '1.0'),
+        ('Content-Type', 'application/pkcs7-mime; smime-type=enveloped-data; name=smime.p7m'),
+        ('Content-Transfer-Encoding', 'base64'),
+        ('Content-Disposition', 'attachment; filename=smime.p7m')
+    )
 
     for name, value in list(msg.items()):
-        if name in list(overrides.keys()):
+        if name in [x for x, _ in  overrides]:
             continue
         result_msg.add_header(name, value)
 
-    for name, value in list(overrides.items()):
+    for name, value in overrides:
         if name in result_msg:
-            result_msg.replace_header(name, value)
-        else:
-            result_msg[name] = value
+            del result_msg[name]
+        result_msg[name] = value
 
     return result_msg.as_string()
