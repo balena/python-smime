@@ -24,6 +24,9 @@ Requirements
 Example
 -------
 
+The code below loads Alice's public key in PEM format and uses it to encrypt
+the e-mail in S/MIME format::
+
     import sys
     import smime
 
@@ -38,7 +41,7 @@ Example
     with open('alice-public-key.pem', 'rb') in pem
         print(smime.encrypt('\n'.join(message), pem.read()))
 
-Output:
+Output::
 
     To: "Alice" <alice@foo.com>
     From: "Bob" <bob@bar.com>
@@ -50,7 +53,7 @@ Output:
 
     <base64-enveloped-data>
 
-The same can be decrypted using OpenSSL from the command line:
+The same can be decrypted using OpenSSL from the command line::
 
     $ openssl smime -decrypt -in smime.p7m -inkey alice-private-key.pem
 
