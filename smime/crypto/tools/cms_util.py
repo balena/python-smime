@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from __future__ import print_function
 
 """cms_util.py: CMS parsing utility.
 
@@ -28,9 +27,9 @@ import argparse
 
 def print_cms(args, message):
     if args.debug:
-        print("%r" % message)
+        print(("%r" % message))
     else:
-        print(message.human_readable())
+        print((message.human_readable()))
 
 
 def try_open(args, file):
@@ -51,7 +50,7 @@ def try_open(args, file):
         except TypeError as e:
             if not printed:
                 # Immediate error
-                print("File is not a valid BASE64 file: %s" % e)
+                print(("File is not a valid BASE64 file: %s" % e))
             else:
                 exit_with_message("Error while scanning BASE64 blocks: %s" % e)
         except error.ASN1Error as e:

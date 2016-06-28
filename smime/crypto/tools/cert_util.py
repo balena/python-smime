@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from __future__ import print_function
 
 """cert_util.py: X509 certificate parsing utility.
 
@@ -39,19 +38,19 @@ import argparse
 def print_cert(args, certificate):
     if not args.subject and not args.issuer and not args.fingerprint:
         if args.debug:
-            print("%r" % certificate)
+            print(("%r" % certificate))
         else:
             print(certificate)
     else:
         if args.subject:
-            print("subject:\n%s" % certificate.print_subject_name())
+            print(("subject:\n%s" % certificate.print_subject_name()))
         if args.issuer:
-            print("issuer:\n%s" % certificate.print_issuer_name())
+            print(("issuer:\n%s" % certificate.print_issuer_name()))
         if args.fingerprint:
             # Print in a format familiar from OpenSSL.
-            print("%s fingerprint: %s\n" % (
+            print(("%s fingerprint: %s\n" % (
                 args.digest.upper(), print_util.bytes_to_hex(
-                    certificate.fingerprint(hashfunc=args.digest))))
+                    certificate.fingerprint(hashfunc=args.digest)))))
 
 
 def print_certs(args, cert_file):
@@ -72,7 +71,7 @@ def print_certs(args, cert_file):
         except pem.PemError as e:
             if not printed:
                 # Immediate error
-                print("File is not a valid PEM file: %s" % e)
+                print(("File is not a valid PEM file: %s" % e))
             else:
                 exit_with_message("Error while scanning PEM blocks: %s" % e)
         except error.ASN1Error as e:

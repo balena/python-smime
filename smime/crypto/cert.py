@@ -95,7 +95,7 @@ class Certificate(object):
         """Returns true if any extension appears more than once."""
         extns = self._asn1_cert["tbsCertificate"]["extensions"] or []
         extn_value_count = collections.Counter([e["extnID"] for e in extns])
-        return any([c > 1 for c in extn_value_count.values()])
+        return any([c > 1 for c in list(extn_value_count.values())])
 
     def _get_decoded_extension_value(self, extn_id):
         """Get the decoded value of an extension.

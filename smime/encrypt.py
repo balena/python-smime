@@ -5,8 +5,8 @@ import Crypto.Random.OSRNG as RNG
 from email import message_from_string
 from email.mime.text import MIMEText
 
-from rsa import RSAPublicKey
-from aes import AES128_CBC, AES192_CBC, AES256_CBC
+from .rsa import RSAPublicKey
+from .aes import AES128_CBC, AES192_CBC, AES256_CBC
 
 from smime.crypto.asn1 import oid, types
 from smime.crypto.asn1 import cms
@@ -119,13 +119,13 @@ def encrypt(message, pubkey, algorithm='aes256'):
         'Content-Disposition': 'attachment; filename=smime.p7m'
     }
 
-    for name, value in msg.items():
-        if name in overrides.keys():
+    for name, value in list(msg.items()):
+        if name in list(overrides.keys()):
             continue
         result_msg.add_header(name, value)
 
-    for name, value in overrides.items():
-        if result_msg.has_key(name):
+    for name, value in list(overrides.items()):
+        if name in result_msg:
             result_msg.replace_header(name, value)
         else:
             result_msg[name] = value

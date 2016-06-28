@@ -123,8 +123,7 @@ class CertificateTest(unittest.TestCase):
         certs = list(cert.certs_from_pem_file(self.get_file(
             self._PEM_CHAIN_FILE)))
         self.assertEqual(3, len(certs))
-        self.assertTrue(all(map(lambda x: isinstance(x, cert.Certificate),
-                                certs)))
+        self.assertTrue(all([isinstance(x, cert.Certificate) for x in certs]))
         self.assertTrue("google.com" in certs[0].print_subject_name())
         self.assertTrue("Google Inc" in certs[1].print_subject_name())
         self.assertTrue("Equifax" in certs[2].print_subject_name())
@@ -148,8 +147,7 @@ class CertificateTest(unittest.TestCase):
         with open(self.get_file(self._PEM_CHAIN_FILE)) as f:
             certs = list(cert.certs_from_pem(f.read()))
         self.assertEqual(3, len(certs))
-        self.assertTrue(all(map(lambda x: isinstance(x, cert.Certificate),
-                                certs)))
+        self.assertTrue(all([isinstance(x, cert.Certificate) for x in certs]))
         self.assertTrue("google.com" in certs[0].print_subject_name())
         self.assertTrue("Google Inc" in certs[1].print_subject_name())
         self.assertTrue("Equifax" in certs[2].print_subject_name())

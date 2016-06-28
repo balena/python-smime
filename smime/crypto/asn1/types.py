@@ -1094,7 +1094,7 @@ class Constructed(Abstract):
 
     def modified(self):
         return self._modified or any([v and v.modified()
-                                      for _, v in self.iteritems()])
+                                      for _, v in self.items()])
 
     def human_readable_lines(self, wrap=80, label=""):
         """A pretty human readable representation of the object.
@@ -1137,7 +1137,7 @@ class Constructed(Abstract):
                 lines[-1] += " "
 
         indent = 2
-        for key, value in self.iteritems():
+        for key, value in self.items():
             if value is None:
                 continue
             label = str(key) if self.print_labels else ""
@@ -1174,7 +1174,7 @@ class MetaChoice(abc.ABCMeta):
         if components:
             tag_map = {}
             keys_seen = set()
-            for key, spec in components.iteritems():
+            for key, spec in components.items():
                 if key in keys_seen:
                     raise TypeError("Duplicate name in Choice specification")
                 keys_seen.add(key)
@@ -1304,7 +1304,7 @@ class Choice(Constructed, collections.MutableMapping):
         if len(value) != 1:
             raise ValueError("Choice must have at most one component set")
 
-        key, value = value.iteritems().next()
+        key, value = value.items().next()
         if value is None:
             return {}
 
@@ -1384,7 +1384,7 @@ class Repeated(Constructed, collections.MutableSequence):
     def __len__(self):
         return len(self._value)
 
-    def iteritems(self):
+    def items(self):
         return enumerate(self._value)
 
     def insert(self, index, value):
