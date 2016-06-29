@@ -266,6 +266,13 @@ ID_AES128_CBC = ObjectIdentifier(value='2.16.840.1.101.3.4.1.2')
 ID_AES192_CBC = ObjectIdentifier(value='2.16.840.1.101.3.4.1.22')
 ID_AES256_CBC = ObjectIdentifier(value='2.16.840.1.101.3.4.1.42')
 
+# Hash algorithms
+SHA1_HASH_ALGORITHM = ObjectIdentifier('1.3.14.3.2.26')
+MD5_HASH_ALGORITHM = ObjectIdentifier('1.2.840.113549.2.5')
+SHA224_HASH_ALGORITHM = ObjectIdentifier('2.16.840.1.101.3.4.2.4')
+SHA256_HASH_ALGORITHM = ObjectIdentifier('2.16.840.1.101.3.4.2.1')
+SHA384_HASH_ALGORITHM = ObjectIdentifier('2.16.840.1.101.3.4.2.2')
+SHA512_HASH_ALGORITHM = ObjectIdentifier('2.16.840.1.101.3.4.2.3')
 
 _OID_NAME_DICT = {
     # Object identifier long names taken verbatim from the RFCs.
@@ -371,7 +378,14 @@ _OID_NAME_DICT = {
 
     ID_AES128_CBC: ('id-aes128-CBC', 'AES-128-CBC'),
     ID_AES192_CBC: ('id-aes192-CBC', 'AES-192-CBC'),
-    ID_AES256_CBC: ('id-aes256-CBC', 'AES-256-CBC')
+    ID_AES256_CBC: ('id-aes256-CBC', 'AES-256-CBC'),
+
+    SHA1_HASH_ALGORITHM: ('sha-1', 'SHA1'),
+    MD5_HASH_ALGORITHM: ('md5', 'MD5'),
+    SHA224_HASH_ALGORITHM: ('id-sha224', 'SHA224'),
+    SHA256_HASH_ALGORITHM: ('id-sha256', 'SHA256'),
+    SHA384_HASH_ALGORITHM: ('id-sha384', 'SHA384'),
+    SHA512_HASH_ALGORITHM: ('id-sha512', 'SHA512'),
     }
 
 _OID_DECODING_DICT = {}
