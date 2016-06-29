@@ -19,10 +19,11 @@ Usage:
 """
 
 import sys
+import argparse
 from base64 import b64decode
+from traceback import print_exc
 from smime.crypto import error
 from smime.crypto.asn1 import cms
-import argparse
 
 
 def print_cms(args, message):
@@ -52,20 +53,21 @@ def try_open(args, file):
                 # Immediate error
                 print(("File is not a valid BASE64 file: %s" % e))
             else:
-                exit_with_message("Error while scanning BASE64 blocks: %s" % e)
+                exit_with_message('Error while scanning BASE64 blocks')
         except error.ASN1Error as e:
-            exit_with_message("Bad DER encoding: %s" % e)
+            exit_with_message('Bad DER encoding')
 
     if not printed and args.filetype.lower() != "base64":
         if not args.filetype:
-            print("Attempting to read raw DER")
+            print('Attempting to read raw DER')
         try:
             print_cms(args, cms.from_file(file, strict_der=strict_der))
         except error.ASN1Error as e:
-            exit_with_message("Failed to parse DER from %s\n%s" % (file, e))
+            exit_with_message(('Failed to parse DER from %s' % file))
 
 
 def exit_with_message(error_message):
+    print_exc()
     print(error_message)
     print("Use --help to get help.")
     sys.exit(1)
