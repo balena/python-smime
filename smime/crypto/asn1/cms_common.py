@@ -445,7 +445,7 @@ class EncapsulatedContentInfo(types.Sequence):
     """
     components = (
         (types.Component('eContentType', ContentType)),
-        (types.Component('eContent', types.OctetString.implicit(0), optional=True))
+        (types.Component('eContent', types.OctetString.explicit(0), optional=True))
         )
 
 
@@ -552,16 +552,79 @@ class TBSCertificateRevocationList(types.Sequence):
         )
 
 
-class CertificateRevocationList(types.Sequence):
-    componentType = (
-        (types.Component('tbsCertificateRevocationList', TBSCertificateRevocationList)),
-        (types.Component('signatureAlgorithm', x509_common.AlgorithmIdentifier)),
-        (types.Component('signature', types.BitString))
+class TBSCertList(types.Sequence):
+    '''
+    TBSCertList  ::=  SEQUENCE  {
+        version                 Version OPTIONAL,
+                                     -- if present, MUST be v2
+        signature               AlgorithmIdentifier,
+        issuer                  Name,
+        thisUpdate              Time,
+        nextUpdate              Time OPTIONAL,
+        revokedCertificates     SEQUENCE OF SEQUENCE  {
+             userCertificate         CertificateSerialNumber,
+             revocationDate          Time,
+             crlEntryExtensions      Extensions OPTIONAL
+                                      -- if present, version MUST be v2
+                                  }  OPTIONAL,
+        crlExtensions           [0]  EXPLICIT Extensions OPTIONAL
+                                      -- if present, version MUST be v2
+                                  }
+    '''
+    components = (
+        (types.Component('version', x509_common.Version, optional=True)),
+        (types.Component('signature', AlgorithmIdentifier)),
+        (types.Component('issuer', x509_name.Name)),
+        (types.Component('thisUpdate', x509_time.Time)),
+        (types.Component('nextUpdate', x509_time.Time, optional=True)),
+        (types.Component('revokedCertificates', CRLEntries, optional=True)),
+        (types.Component('crlExtensions', x509_extension.Extensions.explicit(0), optional=True)),
         )
 
 
-class CertificateRevocationLists(types.SetOf):
-    component = CertificateRevocationList
+class CertificateList(types.Sequence):
+    '''
+    CertificateList  ::=  SEQUENCE  {
+            tbsCertList          TBSCertList,
+            signatureAlgorithm   AlgorithmIdentifier,
+            signatureValue       BIT STRING  }
+    '''
+    components = (
+        (types.Component('tbsCertList', TBSCertList)),
+        (types.Component('signatureAlgorithm', AlgorithmIdentifier)),
+        (types.Component('signatureValue', types.BitString))
+        )
+
+
+class OtherRevocationInfoFormat(types.Sequence):
+    '''
+    OtherRevocationInfoFormat ::= SEQUENCE {
+        otherRevInfoFormat OBJECT IDENTIFIER,
+        otherRevInfo ANY DEFINED BY otherRevInfoFormat }
+    '''
+    components = (
+        (types.Component('otherRevInfoFormat', oid.ObjectIdentifier)),
+        (types.Component('otherRevInfo', types.Any)),
+        )
+
+
+class RevocationInfoChoice(types.Choice):
+    '''
+    RevocationInfoChoice ::= CHOICE {
+        crl CertificateList,
+        other [1] IMPLICIT OtherRevocationInfoFormat }
+    '''
+    components = {
+        'crl': CertificateList,
+        'other': OtherRevocationInfoFormat.implicit(1)
+        }
+
+
+class RevocationInfoChoices(types.SetOf):
+    '''
+    RevocationInfoChoices ::= SET OF RevocationInfoChoice
+    '''
+    component = RevocationInfoChoice
 
 
 class OriginatorInfo(types.Sequence):
@@ -572,7 +635,7 @@ class OriginatorInfo(types.Sequence):
     """
     components = (
         (types.Component('certs', CertificateSet.implicit(0), optional=True)),
-        (types.Component('crls', CertificateRevocationLists.implicit(1), optional=True)),
+        (types.Component('crls', RevocationInfoChoices.implicit(1), optional=True)),
         )
 
 

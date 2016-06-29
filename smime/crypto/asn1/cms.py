@@ -16,7 +16,7 @@ class SignedData(types.Sequence):
       digestAlgorithms DigestAlgorithmIdentifiers,
       encapContentInfo EncapsulatedContentInfo,
       certificates [0] IMPLICIT CertificateSet OPTIONAL,
-      crls [1] IMPLICIT CertificateRevocationLists OPTIONAL,
+      crls [1] IMPLICIT RevocationInfoChoices OPTIONAL,
       signerInfos SignerInfos }
     """
     components = (
@@ -24,7 +24,7 @@ class SignedData(types.Sequence):
         (types.Component('digestAlgorithms', cms_common.DigestAlgorithmIdentifiers)),
         (types.Component('encapContentInfo', cms_common.EncapsulatedContentInfo)),
         (types.Component('certificates', cms_common.CertificateSet.implicit(0), optional=True)),
-        (types.Component('crls', cms_common.CertificateRevocationLists.implicit(1), optional=True)),
+        (types.Component('crls', cms_common.RevocationInfoChoices.implicit(1), optional=True)),
         (types.Component('signerInfos', cms_common.SignerInfos))
         )
 
