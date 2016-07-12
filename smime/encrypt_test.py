@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 import os
 import unittest
 from subprocess import Popen, PIPE
@@ -58,14 +60,14 @@ class EncryptTest(unittest.TestCase):
         payload = private_message.get_payload().splitlines()
         self.assertEquals('Now you see me.', payload[len(payload)-1])
 
-    def test_message_to_carl_aes256(self):
-        self.assertMessageToCarlWith('aes256')
+    def test_message_to_carl_aes256_cbc(self):
+        self.assertMessageToCarlWith('aes256_cbc')
 
-    def test_message_to_carl_aes192(self):
-        self.assertMessageToCarlWith('aes192')
+    def test_message_to_carl_aes192_cbc(self):
+        self.assertMessageToCarlWith('aes192_cbc')
 
-    def test_message_to_carl_aes128(self):
-        self.assertMessageToCarlWith('aes128')
+    def test_message_to_carl_aes128_cbc(self):
+        self.assertMessageToCarlWith('aes128_cbc')
 
 
 if __name__ == "__main__":

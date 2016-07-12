@@ -1,114 +1,67 @@
 # Refer to RFC3565
+# coding: utf-8
 
-import base64
-import Crypto.Random.OSRNG as RNG
+from __future__ import unicode_literals
+
+from base64 import b64encode
 from email import message_from_string
 from email.mime.text import MIMEText
 
-from .rsa import RSAPublicKey
-from .aes import AES128_CBC, AES192_CBC, AES256_CBC
+from .cert import certs_from_pem
+from .block import get_cipher
+from .print_util import wrap_lines
 
-from smime.crypto.asn1 import oid, types
-from smime.crypto.asn1 import cms
-from smime.crypto.asn1 import cms_common
-
-
-def __get_issuer_and_serial_number(x509_cert):
-    tbsCertificate = x509_cert['tbsCertificate']
-    return cms_common.IssuerAndSerialNumber({
-        'issuer': tbsCertificate['issuer'],
-        'serialNumber': tbsCertificate['serialNumber']
-    })
+from asn1crypto import cms
 
 
-def __get_enveloped_data(pubkey_cipher, sym_cipher, x509_cert, encrypted_key, iv, encrypted_content):
-    return cms.ContentInfo({
-        'contentType': oid.ID_ENVELOPED_DATA,
-        'content': cms.EnvelopedData({
-            'version': cms_common.CMSVersion('v0'),
-            'recipientInfos': cms_common.RecipientInfos([
-                cms_common.RecipientInfo({
-                    'ktri': cms_common.KeyTransRecipientInfo({
-                        'version': cms_common.CMSVersion('v0'),
-                        'rid': cms_common.RecipientIdentifier({
-                            'issuerAndSerialNumber':
-                                __get_issuer_and_serial_number(x509_cert)
-                        }),
-                        'keyEncryptionAlgorithm':
-                            cms_common.KeyEncryptionAlgorithmIdentifier({
-                                'algorithm': pubkey_cipher.oid,
-                                'parameters': types.Null(False)
-                            }),
-                        'encryptedKey':  cms_common.EncryptedKey(encrypted_key)
-                    })
-                })
-            ]),
-            'encryptedContentInfo': cms_common.EncryptedContentInfo({
-                'contentType': oid.ID_DATA,
-                'contentEncryptionAlgorithm': cms_common.ContentEncryptionAlgorithmIdentifier({
-                    'algorithm': sym_cipher.oid,
-                    'parameters': types.OctetString(iv)
-                }),
-                'encryptedContent': cms_common.EncryptedContent(encrypted_content)
-            })
-        })
-    })
-
-
-def __encode_in_base64(stream):
-    columns = 64
-    result = []
-    stream = base64.b64encode(stream)
-    while len(stream) > 0:
-        chunk = stream[:columns]
-        stream = stream[columns:]
-        result.append(chunk)
-    return '\n'.join(result)
-
-
-def __encrypt_internal(rsa, algo, content, session_key):
-    """
-    Takes the contents of the message parameter, formatted as in RFC 2822, and encrypts them,
-    so that they can only be read by the intended recipient specified by pubkey.
-    :return: string containing the new encrypted message.
-    """
-    return rsa.encrypt(session_key), algo.encrypt(content)
-
-
-def encrypt(message, pubkey, algorithm='aes256'):
-    """
-    Takes the contents of the message parameter, formatted as in RFC 2822, and encrypts them,
-    so that they can only be read by the intended recipient specified by pubkey.
-    :return: string containing the new encrypted message.
-    """
-
-    if algorithm == 'aes256':
-        Algo = AES256_CBC
-    elif algorithm == 'aes192':
-        Algo = AES192_CBC
-    elif algorithm == 'aes128':
-        Algo = AES128_CBC
+def __iterate_recipient_infos(certs, session_key):
+    if isinstance(certs, (tuple, list)):
+        for cert_file in certs:
+            for cert in certs_from_pem(cert_file):
+                recipient_info = cert.recipient_info(session_key)
+                yield recipient_info
     else:
-        raise ValueError('Unknown algorithm')
+        for cert in certs_from_pem(certs):
+            recipient_info = cert.recipient_info(session_key)
+            yield recipient_info
+
+
+def encrypt(message, certs, algorithm='aes256'):
+    """
+    Takes the contents of the message parameter, formatted as in RFC 2822, and encrypts them,
+    so that they can only be read by the intended recipient specified by pubkey.
+    :return: string containing the new encrypted message.
+    """
+    # Get the chosen block cipher
+    block_cipher = get_cipher(algorithm)
+    if block_cipher == None:
+        raise ValueError('Unknown block algorithm')
 
     # Get the message content
     msg = message_from_string(message)
     to_encode = MIMEText(msg.get_payload())
     content = to_encode.as_string()
 
-    pubkey_cipher = RSAPublicKey(pubkey)
-
-    session_key = RNG.new().read(Algo.key_size)
-    iv = RNG.new().read(Algo.block_size)
-    sym_cipher = Algo(session_key, iv)
-
-    encrypted_key = pubkey_cipher.encrypt(session_key)
-    encrypted_content = sym_cipher.encrypt(content)
+    # Generate the recipient infos
+    recipient_infos = []
+    for recipient_info in __iterate_recipient_infos(certs, block_cipher.session_key):
+        if recipient_info == None:
+            raise ValueError('Unknown public-key algorithm')
+        recipient_infos.append(recipient_info)
 
     # Encode the content
-    enveloped_data = __get_enveloped_data(pubkey_cipher, sym_cipher,
-            pubkey_cipher.get_cert(), encrypted_key, iv, encrypted_content)
-    encoded_content = __encode_in_base64(enveloped_data.encode())
+    encrypted_content_info = block_cipher.encrypt(content)
+
+    # Build the enveloped data and encode in base64
+    enveloped_data = cms.ContentInfo({
+        'content_type': 'enveloped_data',
+        'content': {
+            'version': 'v0',
+            'recipient_infos': recipient_infos,
+            'encrypted_content_info': encrypted_content_info
+        }
+    })
+    encoded_content = '\n'.join(wrap_lines(b64encode(enveloped_data.dump()), 64))
 
     # Create the resulting message
     result_msg = MIMEText(encoded_content)

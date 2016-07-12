@@ -28,17 +28,15 @@ Usage:
 """
 
 import sys
-from smime.crypto import cert
-from smime.crypto import error
-from smime.crypto import pem
-from smime.crypto.asn1 import print_util
+from smime import cert
+from smime import print_util
 import argparse
 
 
 def print_cert(args, certificate):
     if not args.subject and not args.issuer and not args.fingerprint:
         if args.debug:
-            print(("%r" % certificate))
+            print(certificate.debug())
         else:
             print(certificate)
     else:
@@ -65,26 +63,23 @@ def print_certs(args, cert_file):
             print("Attempting to read PEM")
 
         try:
-            for c in cert.certs_from_pem_file(cert_file, strict_der=False):
+            for c in cert.certs_from_pem_file(cert_file):
                 print_cert(args, c)
                 printed = True
-        except pem.PemError as e:
+        except Exception as e:
             if not printed:
                 # Immediate error
                 print(("File is not a valid PEM file: %s" % e))
             else:
                 exit_with_message("Error while scanning PEM blocks: %s" % e)
-        except error.ASN1Error as e:
-            exit_with_message("Bad DER encoding: %s" % e)
 
     if not printed and args.filetype.lower() != "pem":
         if not args.filetype:
             print("Attempting to read raw DER")
         try:
             print_cert(args,
-                       cert.Certificate.from_der_file(cert_file,
-                                                      strict_der=False))
-        except error.ASN1Error as e:
+                       cert.Certificate.from_der_file(cert_file))
+        except Exception as e:
             exit_with_message("Failed to parse DER from %s" % cert_file)
 
 
