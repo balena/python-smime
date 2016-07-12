@@ -8,7 +8,7 @@ AES256-CBC modes.
 
 The ASN.1 implementation does not depend on pyasn1, as it showed too broken for
 creating and reading CMS (Cryptographic Message Syntax). Instead, the
-`Google's certificate transparency project`_ was used in this project.
+`asn1crypto`_ was used in this project.
 
 This implementation uses pycrypto instead of OpenSSL, so everything is 'pure
 python'.
@@ -72,5 +72,5 @@ Versioning
 This software follows `Semantic Versioning`_
 
 
-.. _Google's certificate transparency project: https://www.certificate-transparency.org/)
+.. _asn1crypto: https://github.com/wbond/asn1crypto)
 .. _Semantic Versioning: http://semver.org/
