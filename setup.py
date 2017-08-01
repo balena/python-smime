@@ -35,5 +35,5 @@ setup(
     packages=find_packages(exclude=['smime/test', 'smime/crypto/testdata',
         'smime/crypto/tools', '*_test.py']),
     platforms=["all"],
-    install_requires=['pycrypto'],
+    install_requires=['pycrypto', 'asn1crypto'],
 )
