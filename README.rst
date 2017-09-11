@@ -72,5 +72,5 @@ Versioning
 This software follows `Semantic Versioning`_
 
 
-.. _asn1crypto: https://github.com/wbond/asn1crypto)
+.. _asn1crypto: https://github.com/wbond/asn1crypto
 .. _Semantic Versioning: http://semver.org/
