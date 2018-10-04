@@ -2,23 +2,24 @@
 Python S/MIME Toolkit
 =====================
 
-This library implements a S/MIME handler. In this first version, it can only
-encrypt S/MIME messages using a public RSA key, in AES128-CBC, AES192-CBC or
-AES256-CBC modes.
+This library implements a S/MIME handler. It supports only S/MIME messages
+encryption using a public RSA key, in AES128-CBC, AES192-CBC or AES256-CBC
+modes.
 
 The ASN.1 implementation does not depend on pyasn1, as it showed too broken for
 creating and reading CMS (Cryptographic Message Syntax). Instead, the
 `asn1crypto`_ was used in this project.
 
-This implementation uses pycrypto instead of OpenSSL, so everything is 'pure
-python'.
+This implementation does not use the deprecated `pycrypto` anymore; instead it
+was switched to the more modern `cryptography` library. It is not 'pure python'
+anymore (because of the latter dependency), but at least works.
 
 
 Requirements
 ------------
 
-* Python 2.7 or Python 3.3
-* pycrypto
+* Python 2.7 or Python 3.5+
+* cryptography
 * asn1crypto
 
 
@@ -57,6 +58,25 @@ Output::
 The same can be decrypted using OpenSSL from the command line::
 
     $ openssl smime -decrypt -in smime.p7m -inkey alice-private-key.pem
+
+OpenSSL expects that the `smime.p7m` file above should be in DER or PEM format.
+The latter should be enclosed in `-----BEGIN PKCS7-----` and `-----END
+PKCS7-----` and the content should be in base64 encoding, just like the output
+of the command above. Example::
+
+    -----BEGIN PKCS7-----
+    MIIBdgYJKoZIhvcNAQcDoIIBZzCCAWMCAQAxgb4wgbsCAQAwJjASMRAwDgYDVQQD
+    EwdDYXJsUlNBAhBGNGvHgABWvBHTbi7EELOwMAsGCSqGSIb3DQEBAQSBgCVAQwNg
+    LmJ5ESYxOM1YbOLz2gvzWY1Fk+LZZiylYe7+o1/e/MjtzNwhnu+8vziFwHbXEH1Y
+    jndIbUxiLyXb3omtNDunRICQin5bdo6BI7oE0MufUSqMjk0YUk8UQeNCiUfK89PR
+    RfDclb1/sM3XZ7mUJa2OzpnuQIWec3MuJ3k4MIGcBgkqhkiG9w0BBwEwHQYJYIZI
+    AWUDBAEqBBCVZVOt2lxSzmd+Ti1M372xgHDR0+ToLk1MJeTTtmJdnnNNH6631PN0
+    i3NJeJBKDDs4onI8xywqFtJP0of6GPoTGV/7D2vkgO2+jhCBTrzjYczbdOhh6Z5X
+    o0i/81NPSoaLhrfwKMQvT7sXX7c9YdbTjyglyGqhXUN8h+mIRlP9IStD
+    -----END PKCS7-----
+
+Remember that the above formatting serves only for the purpose of testing the
+encryption with OpenSSL. Do not make such enclosing in e-mails.
 
 
 License

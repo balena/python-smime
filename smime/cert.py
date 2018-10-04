@@ -8,7 +8,7 @@ import hashlib
 
 from asn1crypto import x509, cms, pem
 
-from .pubkey import DSAPublicKeyCipher, RSAPublicKeyCipher
+from .pubkey import RSAPublicKeyCipher
 
 
 class CertificateError(Exception):
@@ -161,7 +161,6 @@ class Certificate(object):
             The PublicKey object for this certificate
         """
         algorithms = {
-            DSAPublicKeyCipher.algo: DSAPublicKeyCipher,
             RSAPublicKeyCipher.algo: RSAPublicKeyCipher
         }
         public_key_info = self._cert.public_key

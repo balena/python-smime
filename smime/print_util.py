@@ -60,7 +60,7 @@ def wrap_lines(long_string, wrap):
        a list of lines of at most |wrap| characters each."""
     if not long_string:
         return []
-    long_lines = long_string.split('\n')
+    long_lines = long_string.decode('utf-8').split('\n')
     if wrap <= 0:
         return long_lines
     ret = []

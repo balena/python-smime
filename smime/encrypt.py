@@ -26,7 +26,7 @@ def __iterate_recipient_infos(certs, session_key):
             yield recipient_info
 
 
-def encrypt(message, certs, algorithm='aes256'):
+def encrypt(message, certs, algorithm='aes256_cbc'):
     """
     Takes the contents of the message parameter, formatted as in RFC 2822, and encrypts them,
     so that they can only be read by the intended recipient specified by pubkey.

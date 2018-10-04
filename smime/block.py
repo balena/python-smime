@@ -2,8 +2,10 @@
 
 from __future__ import unicode_literals
 
-from Crypto import Cipher
-import Crypto.Random.OSRNG as RNG
+import os
+
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.backends import default_backend
 
 from abc import ABCMeta, abstractmethod
 
@@ -33,9 +35,12 @@ class AES(BlockCipher):
         self.algorithm = algorithm
         self.mode = mode
         self.key_size = key_size
-        self._session_key = RNG.new().read(self.key_size)
-        self._iv = RNG.new().read(self.block_size)
-        self._cipher = Cipher.AES.new(self._session_key, mode, self._iv)
+        self._session_key = os.urandom(self.key_size)
+        self._iv = os.urandom(self.block_size)
+        algorithm = algorithms.AES(self._session_key)
+        mode = mode(self._iv)
+        backend = default_backend()
+        self._encryptor = Cipher(algorithm, mode, backend=backend).encryptor()
 
     @property
     def session_key(self):
@@ -43,7 +48,7 @@ class AES(BlockCipher):
 
     def encrypt(self, data):
         padded_data = self._pad(data, self.block_size)
-        encrypted_content = self._cipher.encrypt(padded_data)
+        encrypted_content = self._encryptor.update(padded_data.encode('utf-8')) + self._encryptor.finalize()
         return {
             'content_type': 'data',
             'content_encryption_algorithm': {
@@ -65,9 +70,9 @@ class AES(BlockCipher):
 
 def get_cipher(algorithm):
     algorithms = {
-        'aes128_cbc': (AES, (Cipher.AES.MODE_CBC, 16)),
-        'aes192_cbc': (AES, (Cipher.AES.MODE_CBC, 24)),
-        'aes256_cbc': (AES, (Cipher.AES.MODE_CBC, 32)),
+        'aes128_cbc': (AES, (modes.CBC, 16)),
+        'aes192_cbc': (AES, (modes.CBC, 24)),
+        'aes256_cbc': (AES, (modes.CBC, 32)),
     }
     if algorithm in algorithms:
         cipher, parameters = algorithms[algorithm]
