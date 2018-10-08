@@ -12,7 +12,7 @@ from .block import get_cipher
 from .print_util import wrap_lines
 
 from asn1crypto import cms
-
+from copy import deepcopy
 
 def __iterate_recipient_infos(certs, session_key):
     if isinstance(certs, (tuple, list)):
@@ -26,9 +26,36 @@ def __iterate_recipient_infos(certs, session_key):
             yield recipient_info
 
 
+def fixTextPlainParts(msg):
+    if msg.is_multipart():
+        parts = msg.get_payload()
+        for i in range(len(parts)):
+            q = fixTextPlainParts(parts[i])
+            msg._payload[i] = q
+        return msg
+    elif msg.get_content_type() == 'text/plain':
+        # Ensure any text parts are put into base64, otherwise block cipher e.g. AES is unhappy
+        txt = msg.get_payload()
+        m = MIMEText(txt, _charset='utf-8')
+        return m
+    else:
+        return msg
+
+def prepareMessage(msg):
+    """
+    Return the message, minus headers not related to MIME content, with text/plain parts (and sub-parts) transformed into base64.
+    """
+    m2 = deepcopy(msg)
+    for i in reversed(range(len(m2._headers))):
+        hdrName = m2._headers[i][0].lower()
+        if not(hdrName=='mime-version' or hdrName.startswith('content-')):
+            del (m2._headers[i])
+    return fixTextPlainParts(m2)
+
+
 def encrypt(message, certs, algorithm='aes256_cbc'):
     """
-    Takes the contents of the message parameter, formatted as in RFC 2822, and encrypts them,
+    Takes the contents of the message parameter, formatted as in RFC 2822 (type str or message), and encrypts them,
     so that they can only be read by the intended recipient specified by pubkey.
     :return: string containing the new encrypted message.
     """
@@ -37,10 +64,12 @@ def encrypt(message, certs, algorithm='aes256_cbc'):
     if block_cipher == None:
         raise ValueError('Unknown block algorithm')
 
-    # Get the message content
-    msg = message_from_string(message)
-    to_encode = MIMEText(msg.get_payload())
-    content = to_encode.as_string()
+    # Get the message content. This could be a string, or a message object
+    if isinstance(message, str):
+        msg = message_from_string(message)
+    else:
+        msg = message
+    content = prepareMessage(msg).as_string()
 
     # Generate the recipient infos
     recipient_infos = []
