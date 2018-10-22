@@ -12,6 +12,7 @@ from .block import get_cipher
 from .print_util import wrap_lines
 
 from asn1crypto import cms
+from email.message import EmailMessage
 
 
 def __iterate_recipient_infos(certs, session_key):
@@ -28,7 +29,7 @@ def __iterate_recipient_infos(certs, session_key):
 
 def encrypt(message, certs, algorithm='aes256_cbc'):
     """
-    Takes the contents of the message parameter, formatted as in RFC 2822, and encrypts them,
+    Takes the contents of the message parameter, formatted as in RFC 2822 (type str or message), and encrypts them,
     so that they can only be read by the intended recipient specified by pubkey.
     :return: string containing the new encrypted message.
     """
@@ -37,12 +38,21 @@ def encrypt(message, certs, algorithm='aes256_cbc'):
     if block_cipher == None:
         raise ValueError('Unknown block algorithm')
 
-    # Get the message content
-    msg = message_from_string(message)
-    to_encode = MIMEText(msg.get_payload())
-    content = to_encode.as_string()
+    # Get the message content. This could be a string, or a message object
+    if isinstance(message, str):
+        msg = message_from_string(message)
+    else:
+        msg = message
+    # Extract the message payload without conversion, & the outermost MIME header / Content headers. This allows
+    # the MIME content to be rendered for any outermost MIME type incl. multipart
+    pl = EmailMessage()
+    for i in msg.items():
+        hname = i[0].lower()
+        if hname == 'mime-version' or hname.startswith('content-'):
+            pl.add_header(i[0], i[1])
+    pl._payload = msg._payload
+    content = pl.as_string()
 
-    # Generate the recipient infos
     recipient_infos = []
     for recipient_info in __iterate_recipient_infos(certs, block_cipher.session_key):
         if recipient_info == None:
