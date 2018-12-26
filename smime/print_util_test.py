@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-
 import unittest
-from smime.crypto.asn1 import print_util
+from smime import print_util
+
 
 class PrintUtilTest(unittest.TestCase):
     def test_bits_to_hex(self):

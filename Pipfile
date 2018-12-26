@@ -1,0 +1,19 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+smime = {path = ".",extras = ["test"],editable = true}
+
+[packages]
+cryptography = "*"
+asn1crypto = "*"
+flake8 = "*"
+flake8-isort = "*"
+isort = "*"
+certifi = "*"
+zest-releaser = {extras = ["recommended"],version = "*"}
+
+[requires]
+python_version = "2.7"

@@ -1,15 +1,12 @@
 #!/usr/bin/env python
-# coding=utf-8
-
-from __future__ import unicode_literals
-
+# _*_ coding: utf-8 _*_
 import os
 import unittest
 from subprocess import Popen, PIPE
 from tempfile import mkstemp
 
 from smime.test import test_config
-from smime import encrypt
+from smime.api import encrypt
 
 from email import message_from_string
 
@@ -46,7 +43,7 @@ class EncryptTest(unittest.TestCase):
             'Now you see me.'
         ]
         with open(self.get_file(self._CARL_PUBLIC_CERTIFICATE)) as cert:
-            result = encrypt('\n'.join(message), cert.read(), algorithm=algorithm)
+            result = encrypt(u'\n'.join(message), cert.read(), algorithm=algorithm)
         fd, tmp_file = mkstemp()
         os.write(fd, result)
 
@@ -61,13 +58,13 @@ class EncryptTest(unittest.TestCase):
         self.assertEquals('Now you see me.', payload[len(payload)-1])
 
     def test_message_to_carl_aes256_cbc(self):
-        self.assertMessageToCarlWith('aes256_cbc')
+        self.assertMessageToCarlWith(u'aes256_cbc')
 
     def test_message_to_carl_aes192_cbc(self):
-        self.assertMessageToCarlWith('aes192_cbc')
+        self.assertMessageToCarlWith(u'aes192_cbc')
 
     def test_message_to_carl_aes128_cbc(self):
-        self.assertMessageToCarlWith('aes128_cbc')
+        self.assertMessageToCarlWith(u'aes128_cbc')
 
 
 if __name__ == "__main__":

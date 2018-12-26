@@ -6,4 +6,3 @@ __version__ = '0.0.4'
 
 __all__ = [__author__, __license__, __version__]
 
-from .encrypt import encrypt

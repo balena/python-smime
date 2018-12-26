@@ -1,8 +1,5 @@
-# Refer to RFC3565
-# coding: utf-8
-
-from __future__ import unicode_literals
-
+# _*_ coding: utf-8 _*_
+"""Refer to RFC3565"""
 from base64 import b64encode
 from email import message_from_string
 from email.mime.text import MIMEText
@@ -12,7 +9,12 @@ from .block import get_cipher
 from .print_util import wrap_lines
 
 from asn1crypto import cms
-from email.message import EmailMessage
+import six
+
+try:
+    from email.message import EmailMessage
+except ImportError:
+    from email.message import Message as EmailMessage
 
 
 def __iterate_recipient_infos(certs, session_key):
@@ -39,7 +41,7 @@ def encrypt(message, certs, algorithm='aes256_cbc'):
         raise ValueError('Unknown block algorithm')
 
     # Get the message content. This could be a string, or a message object
-    passed_as_str = isinstance(message, str)
+    passed_as_str = isinstance(message, six.string_types)
     if passed_as_str:
         msg = message_from_string(message)
     else:
@@ -47,6 +49,7 @@ def encrypt(message, certs, algorithm='aes256_cbc'):
     # Extract the message payload without conversion, & the outermost MIME header / Content headers. This allows
     # the MIME content to be rendered for any outermost MIME type incl. multipart
     pl = EmailMessage()
+
     for i in msg.items():
         hname = i[0].lower()
         if hname == 'mime-version' or hname.startswith('content-'):
@@ -65,11 +68,11 @@ def encrypt(message, certs, algorithm='aes256_cbc'):
 
     # Build the enveloped data and encode in base64
     enveloped_data = cms.ContentInfo({
-        'content_type': 'enveloped_data',
-        'content': {
-            'version': 'v0',
-            'recipient_infos': recipient_infos,
-            'encrypted_content_info': encrypted_content_info
+        u'content_type': u'enveloped_data',
+        u'content': {
+            u'version': u'v0',
+            u'recipient_infos': recipient_infos,
+            u'encrypted_content_info': encrypted_content_info
         }
     })
     encoded_content = '\n'.join(wrap_lines(b64encode(enveloped_data.dump()), 64))
