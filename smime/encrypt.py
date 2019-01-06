@@ -1,6 +1,7 @@
 # _*_ coding: utf-8 _*_
 """Refer to RFC3565"""
 from base64 import b64encode
+from copy import deepcopy
 from email import message_from_string
 from email.mime.text import MIMEText
 
@@ -10,11 +11,6 @@ from .print_util import wrap_lines
 
 from asn1crypto import cms
 import six
-
-try:
-    from email.message import EmailMessage
-except ImportError:
-    from email.message import Message as EmailMessage
 
 
 def __iterate_recipient_infos(certs, session_key):
@@ -42,22 +38,24 @@ def encrypt(message, certs, algorithm='aes256_cbc'):
 
     # Get the message content. This could be a string, or a message object
     passed_as_str = isinstance(message, six.string_types)
+
     if passed_as_str:
-        msg = message_from_string(message)
-    else:
-        msg = message
+        message = message_from_string(message)
     # Extract the message payload without conversion, & the outermost MIME header / Content headers. This allows
     # the MIME content to be rendered for any outermost MIME type incl. multipart
-    pl = EmailMessage()
+    copied_msg = deepcopy(message)
 
-    for i in msg.items():
-        hname = i[0].lower()
-        if hname == 'mime-version' or hname.startswith('content-'):
-            pl.add_header(i[0], i[1])
-    pl._payload = msg._payload
-    content = pl.as_string()
+    headers = {}
 
+    for hdr_name in ('Subject', 'To', 'BCC', 'CC', 'From'):
+        values = copied_msg.get_all(hdr_name)
+        if values:
+            del copied_msg[hdr_name]
+            headers[hdr_name] = values
+
+    content = copied_msg.as_string()
     recipient_infos = []
+
     for recipient_info in __iterate_recipient_infos(certs, block_cipher.session_key):
         if recipient_info == None:
             raise ValueError('Unknown public-key algorithm')
@@ -86,8 +84,8 @@ def encrypt(message, certs, algorithm='aes256_cbc'):
         ('Content-Disposition', 'attachment; filename=smime.p7m')
     )
 
-    for name, value in list(msg.items()):
-        if name in [x for x, _ in  overrides]:
+    for name, value in list(copied_msg.items()):
+        if name in [x for x, _ in overrides]:
             continue
         result_msg.add_header(name, value)
 
@@ -95,6 +93,11 @@ def encrypt(message, certs, algorithm='aes256_cbc'):
         if name in result_msg:
             del result_msg[name]
         result_msg[name] = value
+
+    # adds header
+    for hrd, values in six.iteritems(headers):
+        for val in values:
+            result_msg.add_header(hrd, val)
 
     # return the same type as was passed in
     if passed_as_str:
