@@ -10,7 +10,7 @@ here = path.abspath(path.dirname(__file__))
 # Get the long description from the README file
 with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
-
+test_requires = ['pytest','pytest-flake8', 'pytest-cov']
 setup(
     name='smime',
     version=__import__('smime').__version__,
@@ -36,4 +36,10 @@ setup(
         'smime/crypto/tools', '*_test.py']),
     platforms=["all"],
     install_requires=['cryptography', 'asn1crypto', 'six'],
+    setup_requires=['pytest-runner'],
+    tests_require=test_requires,
+    test_suite='tests',
+    extras_require={
+        'test': test_requires
+    }
 )

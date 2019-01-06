@@ -14,7 +14,7 @@ def bits_to_hex(bit_array, delimiter=":"):
     pad_length = 8 - partial_bits if partial_bits else 0
 
     bitstring = "0" * pad_length + "".join(map(str, bit_array))
-    byte_array = [int(bitstring[i:i + 8], 2) for i in range(0, len(bitstring), 8)]
+    byte_array = [int(bitstring[i: i + 8], 2) for i in range(0, len(bitstring), 8)]
     return delimiter.join(map(lambda x: "%02x" % x, byte_array))
 
 
@@ -39,13 +39,13 @@ def int_to_hex(int_value, delimiter=":"):
     ret = ""
     pos = 0
     # Accommodate for negative integers.
-    if hex_string[0] == '-':
-        ret += ' -' + delimiter
+    if hex_string[0] == "-":
+        ret += " -" + delimiter
         hex_string = hex_string[1:]
     # If the first digit is a half-byte, pad with a 0.
     remaining_len = len(hex_string) - pos
     hex_string = hex_string.zfill(remaining_len + remaining_len % 2)
-    byte_values = [hex_string[i:i + 2] for i in range(pos, len(hex_string), 2)]
+    byte_values = [hex_string[i: i + 2] for i in range(pos, len(hex_string), 2)]
     return ret + delimiter.join(byte_values)
 
 
@@ -60,7 +60,7 @@ def wrap_lines(long_string, wrap):
        a list of lines of at most |wrap| characters each."""
     if not long_string:
         return []
-    long_lines = long_string.decode('utf-8').split('\n')
+    long_lines = long_string.decode("utf-8").split("\n")
     if wrap <= 0:
         return long_lines
     ret = []
@@ -69,7 +69,7 @@ def wrap_lines(long_string, wrap):
             # Empty line
             ret += [line]
         else:
-            ret += [line[i:i + wrap] for i in range(0, len(line), wrap)]
+            ret += [line[i: i + wrap] for i in range(0, len(line), wrap)]
     return ret
 
 

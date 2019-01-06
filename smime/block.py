@@ -3,13 +3,16 @@
 from __future__ import unicode_literals
 
 import os
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta
+from abc import abstractmethod
 
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives.ciphers import Cipher
+from cryptography.hazmat.primitives.ciphers import algorithms
+from cryptography.hazmat.primitives.ciphers import modes
 
 
-class BlockCipher():
+class BlockCipher:
     __metaclass__ = ABCMeta
 
     @abstractmethod
@@ -47,14 +50,17 @@ class AES(BlockCipher):
 
     def encrypt(self, data):
         padded_data = self._pad(data, self.block_size)
-        encrypted_content = self._encryptor.update(padded_data.encode('utf-8')) + self._encryptor.finalize()
+        encrypted_content = (
+            self._encryptor.update(padded_data.encode("utf-8"))
+            + self._encryptor.finalize()
+        )
         return {
-            'content_type': 'data',
-            'content_encryption_algorithm': {
-                'algorithm': self.algorithm,
-                'parameters': self._iv
+            "content_type": "data",
+            "content_encryption_algorithm": {
+                "algorithm": self.algorithm,
+                "parameters": self._iv,
             },
-            'encrypted_content': encrypted_content
+            "encrypted_content": encrypted_content,
         }
 
     @staticmethod
@@ -69,9 +75,9 @@ class AES(BlockCipher):
 
 def get_cipher(algorithm):
     algorithms = {
-        'aes128_cbc': (AES, (modes.CBC, 16)),
-        'aes192_cbc': (AES, (modes.CBC, 24)),
-        'aes256_cbc': (AES, (modes.CBC, 32)),
+        "aes128_cbc": (AES, (modes.CBC, 16)),
+        "aes192_cbc": (AES, (modes.CBC, 24)),
+        "aes256_cbc": (AES, (modes.CBC, 32)),
     }
     if algorithm in algorithms:
         cipher, parameters = algorithms[algorithm]

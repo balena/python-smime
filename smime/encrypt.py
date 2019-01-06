@@ -25,7 +25,7 @@ def __iterate_recipient_infos(certs, session_key):
             yield recipient_info
 
 
-def encrypt(message, certs, algorithm='aes256_cbc'):
+def encrypt(message, certs, algorithm="aes256_cbc"):
     """
     Takes the contents of the message parameter, formatted as in RFC 2822 (type str or message), and encrypts them,
     so that they can only be read by the intended recipient specified by pubkey.
@@ -33,8 +33,8 @@ def encrypt(message, certs, algorithm='aes256_cbc'):
     """
     # Get the chosen block cipher
     block_cipher = get_cipher(algorithm)
-    if block_cipher == None:
-        raise ValueError('Unknown block algorithm')
+    if block_cipher is None:
+        raise ValueError("Unknown block algorithm")
 
     # Get the message content. This could be a string, or a message object
     passed_as_str = isinstance(message, six.string_types)
@@ -46,8 +46,8 @@ def encrypt(message, certs, algorithm='aes256_cbc'):
     copied_msg = deepcopy(message)
 
     headers = {}
-
-    for hdr_name in ('Subject', 'To', 'BCC', 'CC', 'From'):
+    # bellows headers are wiped from cloned and would be added in newly created message instance
+    for hdr_name in ("Subject", "To", "BCC", "CC", "From"):
         values = copied_msg.get_all(hdr_name)
         if values:
             del copied_msg[hdr_name]
@@ -57,31 +57,36 @@ def encrypt(message, certs, algorithm='aes256_cbc'):
     recipient_infos = []
 
     for recipient_info in __iterate_recipient_infos(certs, block_cipher.session_key):
-        if recipient_info == None:
-            raise ValueError('Unknown public-key algorithm')
+        if recipient_info is None:
+            raise ValueError("Unknown public-key algorithm")
         recipient_infos.append(recipient_info)
 
     # Encode the content
     encrypted_content_info = block_cipher.encrypt(content)
 
     # Build the enveloped data and encode in base64
-    enveloped_data = cms.ContentInfo({
-        u'content_type': u'enveloped_data',
-        u'content': {
-            u'version': u'v0',
-            u'recipient_infos': recipient_infos,
-            u'encrypted_content_info': encrypted_content_info
+    enveloped_data = cms.ContentInfo(
+        {
+            u"content_type": u"enveloped_data",
+            u"content": {
+                u"version": u"v0",
+                u"recipient_infos": recipient_infos,
+                u"encrypted_content_info": encrypted_content_info,
+            },
         }
-    })
-    encoded_content = '\n'.join(wrap_lines(b64encode(enveloped_data.dump()), 64))
+    )
+    encoded_content = "\n".join(wrap_lines(b64encode(enveloped_data.dump()), 64))
 
     # Create the resulting message
     result_msg = MIMEText(encoded_content)
     overrides = (
-        ('MIME-Version', '1.0'),
-        ('Content-Type', 'application/pkcs7-mime; smime-type=enveloped-data; name=smime.p7m'),
-        ('Content-Transfer-Encoding', 'base64'),
-        ('Content-Disposition', 'attachment; filename=smime.p7m')
+        ("MIME-Version", "1.0"),
+        (
+            "Content-Type",
+            "application/pkcs7-mime; smime-type=enveloped-data; name=smime.p7m",
+        ),
+        ("Content-Transfer-Encoding", "base64"),
+        ("Content-Disposition", "attachment; filename=smime.p7m"),
     )
 
     for name, value in list(copied_msg.items()):

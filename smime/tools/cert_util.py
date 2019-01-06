@@ -30,7 +30,8 @@ Usage:
 import argparse
 import sys
 
-from smime import cert, print_util
+from smime import cert
+from smime import print_util
 
 
 def print_cert(args, certificate):
