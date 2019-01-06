@@ -6,14 +6,19 @@ matrix:
   include:
     - name: Python 2.7
       python: 2.7
-    - name: Python 3.4
-      python: 3.4
+      env: python_version=2.7
+
     - name: Python 3.5
       python: 3.5
+      env: python_version=3.5
+
     - name: Python 3.6
       python: 3.6
+      env: python_version=3.6
+
     - name: Python 3.7
       python: 3.7
+      env: python_version=3.7
 
 cache:
   directories:

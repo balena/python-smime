@@ -1,15 +1,14 @@
-graft src/guillotina_fhirfield
-prune docs
-prune .github
-include AUTHORS.rst
-include CONTRIBUTING.rst
+graft smime
+include AUTHORS
+include CONTRIBUTING.md
 include CHANGES.rst
 include LICENSE
 include README.rst
 
-recursive-include tests *
+recursive-exclude test *
+recursive-exclude tool *
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
 
-exclude Makefile .editorconfig Pipfile* tox.ini .coveragerc .readthedocs.yml docs-requirements.txt
+exclude Makefile .editorconfig Pipfile* tox.ini .coveragerc
 

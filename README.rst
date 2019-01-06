@@ -2,6 +2,10 @@
 Python S/MIME Toolkit
 =====================
 
+.. warning::
+    This package is pure fork version of https://github.com/balena/python-smime. All credits go to original Author(s).
+    Publisher of this fork version (Md Nazrul Islam<email2nazrul@gmail.com>) doest not reserve any Copyright rights.
+
 This library implements a S/MIME handler. It supports only S/MIME messages
 encryption using a public RSA key, in AES128-CBC, AES192-CBC or AES256-CBC
 modes.
