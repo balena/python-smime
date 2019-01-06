@@ -3,7 +3,8 @@ Python S/MIME Toolkit
 =====================
 
 .. warning::
-    This package is pure fork version of https://github.com/balena/python-smime. All credits go to original Author(s).
+    This package is pure fork version from https://github.com/balena/python-smime with immediate release version which contains some necessary refactoring.
+    All credits go to original Author(s).
     Publisher of this fork version (Md Nazrul Islam<email2nazrul@gmail.com>) doest not reserve any Copyright rights.
 
 This library implements a S/MIME handler. It supports only S/MIME messages
