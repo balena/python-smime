@@ -18,10 +18,11 @@ Usage:
   cms_util.py --debug message.pem  - print full ASN.1 structure
 """
 
-import sys
 import argparse
+import sys
 from base64 import b64decode
 from traceback import print_exc
+
 from smime.crypto import error
 from smime.crypto.asn1 import cms
 
@@ -94,5 +95,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

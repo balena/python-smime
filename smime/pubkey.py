@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 from abc import ABCMeta, abstractmethod
 
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives.asymmetric import rsa, padding
+from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
 
 class PublicKeyCipher(object):
@@ -37,4 +37,3 @@ class RSAPublicKeyCipher(PublicKeyCipher):
     def parameters(self):
         # AlgorithmIdentifier parameters is always NULL
         return None
-

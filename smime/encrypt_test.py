@@ -2,13 +2,12 @@
 # _*_ coding: utf-8 _*_
 import os
 import unittest
-from subprocess import Popen, PIPE
+from email import message_from_string
+from subprocess import PIPE, Popen
 from tempfile import mkstemp
 
-from smime.test import test_config
 from smime.api import encrypt
-
-from email import message_from_string
+from smime.test import test_config
 
 
 class EncryptTest(unittest.TestCase):

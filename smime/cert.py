@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 
 import hashlib
 
-from asn1crypto import x509, cms, pem
+from asn1crypto import cms, pem, x509
 
 from .pubkey import RSAPublicKeyCipher
 
