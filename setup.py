@@ -17,7 +17,7 @@ with open(path.join(here, 'CHANGES.rst'), encoding='utf-8') as f:
 test_requires = ['pytest','pytest-flake8', 'pytest-cov']
 setup(
     name='smime-py23',
-    version='0.1.0b1',
+    version='0.1.0b2.dev0',
     description='Python S/MIME Toolkit',
     long_description=long_description,
     url='https://github.com/balena/python-smime',
