@@ -2,7 +2,7 @@
 CHANGES
 =======
 
-0.0.5 (unreleased)
-------------------
+0.1.0b1 (unreleased)
+--------------------
 
-- Nothing changed yet.
+- Initial release.

@@ -48,5 +48,6 @@ setup(
     test_suite='tests',
     extras_require={
         'test': test_requires
-    }
+    },
+    zip_safe=False,
 )
