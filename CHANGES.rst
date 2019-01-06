@@ -2,7 +2,7 @@
 CHANGES
 =======
 
-0.1.0b1 (unreleased)
+0.1.0b1 (2019-01-06)
 --------------------
 
 - Initial release.
