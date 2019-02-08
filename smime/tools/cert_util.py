@@ -27,10 +27,11 @@ Usage:
                                   - print the SHA-256 fingerprint
 """
 
+import argparse
 import sys
+
 from smime import cert
 from smime import print_util
-import argparse
 
 
 def print_cert(args, certificate):

@@ -6,19 +6,23 @@ from __future__ import unicode_literals
 
 import hashlib
 
-from asn1crypto import x509, cms, pem
+from asn1crypto import cms
+from asn1crypto import pem
+from asn1crypto import x509
 
 from .pubkey import RSAPublicKeyCipher
 
 
 class CertificateError(Exception):
     """Certificate has errors."""
+
     pass
 
 
 class Certificate(object):
     """X509 certificates."""
-    PEM_MARKERS = ('CERTIFICATE',)
+
+    PEM_MARKERS = ("CERTIFICATE",)
 
     def __init__(self, der_string):
         """Initialize from a DER string.
@@ -86,7 +90,7 @@ class Certificate(object):
         Returns:
             a Certificate object
         """
-        with open(pem_file, 'rb') as pem_cert_file:
+        with open(pem_file, "rb") as pem_cert_file:
             return cls.from_pem(pem_cert_file.read())
 
     @classmethod
@@ -99,7 +103,7 @@ class Certificate(object):
         Returns:
             a Certificate object.
         """
-        with open(der_file, 'rb') as der_cert_file:
+        with open(der_file, "rb") as der_cert_file:
             return cls.from_der(der_cert_file.read())
 
     def to_der(self):
@@ -125,8 +129,10 @@ class Certificate(object):
         Returns:
             True or False.
         """
-        return (self._cert['tbs_certificate']['issuer'] ==
-                self._cert['tbs_certificate']['subject'])
+        return (
+            self._cert["tbs_certificate"]["issuer"]
+            == self._cert["tbs_certificate"]["subject"]
+        )
 
     def fingerprint(self, hashfunc="sha1"):
         """Get the certificate fingerprint.
@@ -151,8 +157,7 @@ class Certificate(object):
             a (binary) hash digest of the public key.
         """
         h = hashlib.new(hashfunc)
-        h.update(
-            self._cert['tbs_certificate']['subject_public_key_info'].dump())
+        h.update(self._cert["tbs_certificate"]["subject_public_key_info"].dump())
         return h.digest()
 
     def _get_public_key_cipher(self):
@@ -160,9 +165,7 @@ class Certificate(object):
         :return:
             The PublicKey object for this certificate
         """
-        algorithms = {
-            RSAPublicKeyCipher.algo: RSAPublicKeyCipher
-        }
+        algorithms = {RSAPublicKeyCipher.algo: RSAPublicKeyCipher}
         public_key_info = self._cert.public_key
         algorithm = public_key_info.algorithm
         if algorithm not in algorithms:
@@ -172,28 +175,28 @@ class Certificate(object):
 
     def recipient_info(self, session_key):
         cipher = self._get_public_key_cipher()
-        if cipher == None:
+        if cipher is None:
             return None
         encrypted_key = cipher.encrypt(session_key)
-        tbs_cert = self._cert['tbs_certificate']
+        tbs_cert = self._cert["tbs_certificate"]
         # TODO: use subject_key_identifier when available
         return cms.RecipientInfo(
-            name = 'ktri',
-            value = {
-                'version': u'v0',
-                'rid': cms.RecipientIdentifier(
-                    name = 'issuer_and_serial_number',
-                    value = {
-                        'issuer': tbs_cert['issuer'],
-                        'serial_number': tbs_cert['serial_number']
-                    }
+            name="ktri",
+            value={
+                "version": "v0",
+                "rid": cms.RecipientIdentifier(
+                    name="issuer_and_serial_number",
+                    value={
+                        "issuer": tbs_cert["issuer"],
+                        "serial_number": tbs_cert["serial_number"],
+                    },
                 ),
-                'key_encryption_algorithm': {
-                    'algorithm': cipher.algo,
-                    'parameters': cipher.parameters
+                "key_encryption_algorithm": {
+                    "algorithm": cipher.algo,
+                    "parameters": cipher.parameters,
                 },
-                'encrypted_key': encrypted_key
-            }
+                "encrypted_key": encrypted_key,
+            },
         )
 
 
@@ -219,5 +222,5 @@ def certs_from_pem_file(pem_file):
     Yields:
         Certificate objects.
     """
-    with open(pem_file, 'rb') as certs_pem_file:
+    with open(pem_file, "rb") as certs_pem_file:
         return certs_from_pem(certs_pem_file.read())

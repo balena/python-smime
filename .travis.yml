@@ -1,0 +1,35 @@
+# Config file for automatic testing at travis-ci.org
+dist: xenial
+language: python
+sudo: required
+matrix:
+  include:
+    - name: Python 2.7
+      python: 2.7
+      env: python_version=2.7
+
+    - name: Python 3.5
+      python: 3.5
+      env: python_version=3.5
+
+    - name: Python 3.6
+      python: 3.6
+      env: python_version=3.6
+
+    - name: Python 3.7
+      python: 3.7
+      env: python_version=3.7
+
+cache:
+  directories:
+    - eggs
+install:
+  - pip install -U pipenv
+  - pipenv install --dev
+  - sleep 5
+script:
+  - make lint
+  - make clean
+  - pytest -s --cov=smime/ -s --tb=native -v --cov-report term-missing --cov-append smime/
+after_success:
+  - codecov

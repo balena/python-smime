@@ -1,9 +1,11 @@
 from __future__ import unicode_literals
 
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta
+from abc import abstractmethod
 
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives.asymmetric import rsa, padding
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.asymmetric import rsa
 
 
 class PublicKeyCipher(object):
@@ -21,11 +23,11 @@ class PublicKeyCipher(object):
 
 
 class RSAPublicKeyCipher(PublicKeyCipher):
-    algo = 'rsa'
+    algo = "rsa"
 
     def __init__(self, public_key_info):
-        rsaparams = public_key_info['public_key'].native
-        key = rsa.RSAPublicNumbers(rsaparams['public_exponent'], rsaparams['modulus'])
+        rsaparams = public_key_info["public_key"].native
+        key = rsa.RSAPublicNumbers(rsaparams["public_exponent"], rsaparams["modulus"])
         backend = default_backend()
         self._cipher = key.public_key(backend)
         self._padding = padding.PKCS1v15()
@@ -37,4 +39,3 @@ class RSAPublicKeyCipher(PublicKeyCipher):
     def parameters(self):
         # AlgorithmIdentifier parameters is always NULL
         return None
-
