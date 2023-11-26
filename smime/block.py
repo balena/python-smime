@@ -48,12 +48,14 @@ class AES(BlockCipher):
 
     def encrypt(self, data):
         padded_data = self._pad(data, self.block_size)
-        encrypted_content = self._encryptor.update(padded_data.encode('utf-8')) + self._encryptor.finalize()
+        if not isinstance(padded_data, bytes):
+            padded_data = padded_data.encode()
+        encrypted_content = self._encryptor.update(padded_data) + self._encryptor.finalize()
         return {
             'content_type': 'data',
             'content_encryption_algorithm': {
                 'algorithm': self.algorithm,
-                'parameters': self._iv
+                'parameters': self._iv,
             },
             'encrypted_content': encrypted_content
         }
@@ -61,7 +63,7 @@ class AES(BlockCipher):
     @staticmethod
     def _pad(s, block_size):
         n = block_size - len(s) % block_size
-        return s + n * chr(n)
+        return s + n * (chr(n) if isinstance(s, str) else bytes([n]))
 
     @property
     def parameters(self):
