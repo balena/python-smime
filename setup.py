@@ -13,7 +13,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name='smime',
-    version=__import__('smime').__version__,
+    version='0.0.6',
     description='Python S/MIME Toolkit',
     long_description=long_description,
     url='https://github.com/balena/python-smime',
